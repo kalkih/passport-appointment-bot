@@ -60,7 +60,7 @@ const handleStep = async (page, name, callback) => {
   if (textContent === "504 Gateway Time-out") {
     console.warn("504 Gateway Time-out: Retrying...");
     await page.reload();
-    await handleStep(page, callback);
+    await handleStep(page, name, callback);
   }
   await callback();
 };
