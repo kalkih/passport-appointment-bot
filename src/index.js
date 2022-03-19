@@ -6,6 +6,7 @@ const logger = require("./logger");
 const nodeFetch = require("node-fetch");
 const fetchCookie = require("fetch-cookie");
 const cheerio = require("cheerio");
+const tracker = require("./tracker");
 const fetch = fetchCookie(nodeFetch);
 
 const SESSION_COOKIE_NAME = "ASP.NET_VentusBooking_SessionId";
@@ -46,6 +47,8 @@ let sessionId = undefined;
 
   await initSession();
 
+  tracker.init();
+
   logger.info("Starting to check for available timeslots");
   checkAvailableSlotsForLocation(locationQueue[0]);
 })();
@@ -57,6 +60,7 @@ const checkAvailableSlotsForLocation = async (location) => {
 
   while (currentDate.getTime() < maxDate.getTime()) {
     await checkAvailableSlots(currentDate);
+    tracker.track();
     addDays(currentDate);
   }
   logger.verbose("Max date reached, checking next location...");
@@ -145,7 +149,6 @@ async function initSession() {
   await postRequest({
     AgreementText: "123",
     AcceptInformationStorage: true,
-    // AcceptInformationStorage: false,
     NumberOfPeople: NUMBER_OF_PEOPLE,
     Next: "Nästa",
   });
