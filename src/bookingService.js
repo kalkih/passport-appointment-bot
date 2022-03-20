@@ -12,7 +12,7 @@ const generateBaseUrl = (region) =>
 const generatePostUrl = (region) =>
   `https://bokapass.nemoq.se/Booking/Booking/Next/${region.toLowerCase()}`;
 
-const bookingService = (region) => ({
+const bookingService = (region, mock = false) => ({
   baseUrl: generateBaseUrl(region),
   postUrl: generatePostUrl(region),
   region,
@@ -198,6 +198,15 @@ const bookingService = (region) => ({
     }
   },
   async finalizeBooking() {
+    if (mock) {
+      logger.verbose(`Mocking booking...`);
+      return {
+        bookingNumber: "123456789",
+        slot: "2000-01-01 12:00:00",
+        expedition: "Mock location",
+      };
+    }
+
     logger.verbose(`Confirming booking...`);
     const res = await this.postRequest({
       Next: "Bekräfta bokning",

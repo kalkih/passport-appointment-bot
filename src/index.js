@@ -3,7 +3,10 @@ const logger = require("./logger");
 const tracker = require("./tracker");
 const config = require("../config.json");
 const validateConfig = require("./validateConfig");
-const bookingService = require("./bookingService")(config.region);
+const yargs = require("yargs/yargs");
+const { hideBin } = require("yargs/helpers");
+const argv = yargs(hideBin(process.argv)).argv;
+const bookingService = require("./bookingService")(config.region, argv.mock);
 
 const locationQueue = [];
 
@@ -59,13 +62,14 @@ const checkAvailableSlotsForLocation = async (location) => {
         location,
         config
       );
+
       if (booking) {
-        logger.log("success", "Booking successful:");
-        logger.log("success", `Booking number: \t\t ${booking.bookingNumber}`);
-        logger.log("success", `Time: \t\t ${booking.slot}`);
+        logger.log("success", "BOOKING SUCCESSFUL");
+        logger.log("success", `Booking number: \t ${booking.bookingNumber}`);
+        logger.log("success", `Time: \t\t\t ${booking.slot}`);
         logger.log("success", `Location: \t\t ${booking.expedition}`);
-        logger.log("success", `Email: \t\t ${config.email}`);
-        logger.log("success", `Phone: \t\t ${config.phone}`);
+        logger.log("success", `Email: \t\t\t ${config.email}`);
+        logger.log("success", `Phone: \t\t\t ${config.phone}`);
         process.exit();
       } else {
         logger.error(`Failed booking slot ${timeslot}`);
