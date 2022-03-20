@@ -3,7 +3,7 @@ const fetchCookie = require("fetch-cookie");
 const fetch = fetchCookie(nodeFetch);
 const logger = require("./logger");
 const cheerio = require("cheerio");
-const regions = require("./regions");
+const locations = require("./locations");
 
 const NUMBER_OF_PEOPLE = 1;
 
@@ -23,7 +23,7 @@ const bookingService = (region) => ({
 
     await this.postRequest({
       FormId: 1,
-      ServiceGroupId: regions[region],
+      ServiceGroupId: locations[region].id,
       StartNextButton: "Boka ny tid",
     });
     logger.log("success", "Started booking session");

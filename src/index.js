@@ -1,5 +1,4 @@
 const locations = require("./locations");
-const regions = require("./regions");
 const logger = require("./logger");
 const tracker = require("./tracker");
 const config = require("../config.json");
@@ -7,22 +6,22 @@ const validateConfig = require("./validateConfig");
 const bookingService = require("./bookingService")(config.region);
 
 const locationQueue = [];
-// const bookingService = createBookingService(config.region);
 
 (async () => {
   validateConfig();
 
   logger.info("Validating provided region...");
-  if (!(config.region in regions)) {
+  const region = locations[config.region];
+  if (!region) {
     logger.error(`Region not supported: ${config.region}, exiting...`);
     process.exit();
   }
-  logger.log("success", "Valid region");
+  logger.log("success", `Valid region ${config.region}`);
 
   logger.info("Validating provided locations...");
   for (const location of config.locations) {
-    if (locations[location]) {
-      locationQueue.push(locations[location]);
+    if (region.locations[location]) {
+      locationQueue.push(region.locations[location]);
     } else {
       logger.error(`Location not found: ${location}, skipping...`);
     }
