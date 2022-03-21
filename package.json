@@ -2,17 +2,20 @@
   "name": "passport-appointment-bot",
   "version": "1.0.0",
   "description": "",
+  "author": "Karl Kihlström",
+  "license": "MIT",
   "main": "src/index.js",
+  "bin": "src/index.js",
   "scripts": {
     "start": "node ./src/index",
     "dev": "nodemon ./src/index",
     "dev:mock": "nodemon ./src/index --mock",
+    "package": "NODE_ENV=production pkg . && cp ./config.json ./dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Karl Kihlström",
-  "license": "MIT",
   "devDependencies": {
     "nodemon": "^2.0.15",
+    "pkg": "^5.5.2",
     "prettier": "^2.5.1"
   },
   "dependencies": {
@@ -21,5 +24,9 @@
     "node-fetch": "^2.6.7",
     "winston": "^3.6.0",
     "yargs": "^17.4.0"
+  },
+  "pkg": {
+    "outputPath": "dist",
+    "name": "passport-appointment-bot"
   }
 }

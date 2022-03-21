@@ -1,4 +1,3 @@
-const config = require("../config.json");
 const logger = require("./logger");
 
 const requiredProperties = [
@@ -11,7 +10,7 @@ const requiredProperties = [
   "lastname",
 ];
 
-const validateConfig = () => {
+const validateConfig = (config) => {
   logger.info("Validating configuration...");
   requiredProperties.forEach((prop) => {
     if (!(prop in config)) {
