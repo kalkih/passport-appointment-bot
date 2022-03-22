@@ -14,7 +14,7 @@ const locationQueue = [];
 (async () => {
   validateConfig(config);
 
-  logger.info("Validating provided region...");
+  logger.info("Validating configured region...");
   const region = locations[config.region];
   if (!region) {
     logger.error(`Region not supported: ${config.region}, exiting...`);
@@ -22,14 +22,17 @@ const locationQueue = [];
   }
   logger.log("success", `Valid region ${config.region}`);
 
-  logger.info("Validating provided locations...");
+  logger.info("Validating configured locations...");
   for (const location of config.locations) {
     if (region.locations[location]) {
-      locationQueue.push(region.locations[location]);
+      locationQueue.push({ name: location, id: region.locations[location] });
     } else {
       logger.error(`Location not found: ${location}, skipping...`);
     }
   }
+  logger.success(
+    `Valid locations ${locationQueue.map(({ name }) => name).join(", ")}`
+  );
 
   await bookingService.initSession();
 
@@ -39,14 +42,14 @@ const locationQueue = [];
   checkAvailableSlotsForLocation(locationQueue[0]);
 })();
 
-const checkAvailableSlotsForLocation = async (location) => {
-  logger.info(`Switching to location: ${location}`);
+const checkAvailableSlotsForLocation = async ({ name, id }) => {
+  logger.info(`Switching to location: ${name}`);
   const maxDate = new Date(config.max_date);
   const currentDate = new Date();
 
   while (currentDate.getTime() < maxDate.getTime()) {
     const [freeSlots, bookedSlots] = await bookingService.getFreeSlotsForWeek(
-      locationQueue[0],
+      id,
       currentDate
     );
 
@@ -60,7 +63,7 @@ const checkAvailableSlotsForLocation = async (location) => {
       const booking = await bookingService.bookSlot(
         serviceTypeId,
         timeslot,
-        location,
+        id,
         config
       );
 
