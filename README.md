@@ -23,6 +23,4 @@ The bot can be configured to search for appointments in a specific region & in o
 
 ### Supported locations
 
-Currently all regions & cities are not configured for the project.
 Supported regions & cities can be found in `src/locations.js`.
-Missing regions & cities can easily be added by following the structure of `src/locations.js`.
