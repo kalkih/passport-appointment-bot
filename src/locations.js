@@ -1,4 +1,25 @@
 module.exports = {
+  Dalarna: {
+    id: 15,
+    passportId: 27,
+    cardId: 26,
+    locations: {
+      Avesta: 50,
+      Borlänge: 6,
+      Ludvika: 55,
+      Mora: 56,
+    },
+  },
+  Jamtland: {
+    id: 18,
+    locations: {
+      Funäsdalen: 62,
+      Strömsund: 73,
+      Sveg: 74,
+      Åre: 77,
+      Östersund: 9,
+    },
+  },
   Stockholm: {
     id: 47,
     locations: {
@@ -33,6 +54,8 @@ module.exports = {
   },
   Blekinge: {
     id: 74,
+    passportId: 76,
+    cardId: 75,
     locations: {
       Karlshamn: 106,
       Karlskrona: 105,
@@ -60,6 +83,8 @@ module.exports = {
   },
   Norrbotten: {
     id: 53,
+    passportId: 54,
+    cardId: 55,
     locations: {
       Arvidsjaur: 60,
       Boden: 61,

@@ -90,15 +90,21 @@ const bookingService = (region, mock = false) => ({
     }
     return [[], []];
   },
-  async bookSlot(serviceTypeId, timeslot, location, config) {
+  async bookSlot(serviceTypeId, timeslot, location, regionConfig, config) {
     try {
       await this.selectSlot(serviceTypeId, timeslot, location);
-      await this.providePersonalDetails(config.firstname, config.lastname);
+      await this.providePersonalDetails(
+        config.firstname,
+        config.lastname,
+        regionConfig.passportId,
+        regionConfig.cardId
+      );
       await this.confirmSlot();
       await this.provideContactDetails(config.email, config.phone);
       return await this.finalizeBooking();
     } catch (error) {
       logger.error("Something went wrong when trying to book timeslot");
+      logger.error(error);
       return undefined;
     }
   },
@@ -124,10 +130,10 @@ const bookingService = (region, mock = false) => ({
       throw new Error();
     }
   },
-  async providePersonalDetails(firstname, lastname) {
+  async providePersonalDetails(firstname, lastname, passportId, cardId) {
     logger.verbose(`Providing personal details for booking`);
     const res = await this.postRequest({
-      gCustomerId: 0,
+      "Customers[0].BookingCustomerId": 0,
       "Customers[0].BookingFieldValues[0].Value": firstname,
       "Customers[0].BookingFieldValues[0].BookingFieldId": 5,
       "Customers[0].BookingFieldValues[0].BookingFieldTextName": "BF_2_FÖRNAMN",
@@ -138,10 +144,10 @@ const bookingService = (region, mock = false) => ({
         "BF_2_EFTERNAMN",
       "Customers[0].BookingFieldValues[1].FieldTypeId": 1,
       "Customers[0].Services[0].IsSelected": true,
-      "Customers[0].Services[0].ServiceId": 54,
+      "Customers[0].Services[0].ServiceId": passportId,
       "Customers[0].Services[0].ServiceTextName": `SERVICE_2_PASSANSÖKAN${this.region.toUpperCase()}`,
       "Customers[0].Services[1].IsSelected": false,
-      "Customers[0].Services[1].ServiceId": 55,
+      "Customers[0].Services[1].ServiceId": cardId,
       "Customers[0].Services[1].ServiceTextName": `SERVICE_2_ID-KORT${this.region.toUpperCase()}`,
       Next: "Nästa",
     });

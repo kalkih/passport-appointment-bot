@@ -76,6 +76,7 @@ const checkAvailableSlotsForLocation = async (location) => {
         serviceTypeId,
         timeslot,
         location,
+        locations[config.region],
         config
       );
 
