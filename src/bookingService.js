@@ -8,9 +8,13 @@ const locations = require("./locations");
 const NUMBER_OF_PEOPLE = 1;
 
 const generateBaseUrl = (region) =>
-  `https://bokapass.nemoq.se/Booking/Booking/Index/${region.toLowerCase()}`;
+  `https://bokapass.nemoq.se/Booking/Booking/Index/${replaceSpecialChars(
+    region.toLowerCase()
+  )}`;
 const generatePostUrl = (region) =>
-  `https://bokapass.nemoq.se/Booking/Booking/Next/${region.toLowerCase()}`;
+  `https://bokapass.nemoq.se/Booking/Booking/Next/${replaceSpecialChars(
+    region.toLowerCase()
+  )}`;
 
 const bookingService = (region, mock = false) => ({
   baseUrl: generateBaseUrl(region),
@@ -38,7 +42,7 @@ const bookingService = (region, mock = false) => ({
     logger.log("success", "Accepted booking terms");
 
     logger.info("Setting residency...");
-    const res = await this.postRequest({
+    await this.postRequest({
       "ServiceCategoryCustomers[0].CustomerIndex": 0,
       "ServiceCategoryCustomers[0].ServiceCategoryId": 2,
       Next: "Nästa",
@@ -90,15 +94,10 @@ const bookingService = (region, mock = false) => ({
     }
     return [[], []];
   },
-  async bookSlot(serviceTypeId, timeslot, location, regionConfig, config) {
+  async bookSlot(serviceTypeId, timeslot, location, config) {
     try {
       await this.selectSlot(serviceTypeId, timeslot, location);
-      await this.providePersonalDetails(
-        config.firstname,
-        config.lastname,
-        regionConfig.passportId,
-        regionConfig.cardId
-      );
+      await this.providePersonalDetails(config.firstname, config.lastname);
       await this.confirmSlot();
       await this.provideContactDetails(config.email, config.phone);
       return await this.finalizeBooking();
@@ -130,7 +129,7 @@ const bookingService = (region, mock = false) => ({
       throw new Error();
     }
   },
-  async providePersonalDetails(firstname, lastname, passportId, cardId) {
+  async providePersonalDetails(firstname, lastname) {
     logger.verbose(`Providing personal details for booking`);
     const res = await this.postRequest({
       "Customers[0].BookingCustomerId": 0,
@@ -144,10 +143,10 @@ const bookingService = (region, mock = false) => ({
         "BF_2_EFTERNAMN",
       "Customers[0].BookingFieldValues[1].FieldTypeId": 1,
       "Customers[0].Services[0].IsSelected": true,
-      "Customers[0].Services[0].ServiceId": passportId,
+      "Customers[0].Services[0].ServiceId": locations[this.region].passportId,
       "Customers[0].Services[0].ServiceTextName": `SERVICE_2_PASSANSÖKAN${this.region.toUpperCase()}`,
       "Customers[0].Services[1].IsSelected": false,
-      "Customers[0].Services[1].ServiceId": cardId,
+      "Customers[0].Services[1].ServiceId": locations[this.region].cardId,
       "Customers[0].Services[1].ServiceTextName": `SERVICE_2_ID-KORT${this.region.toUpperCase()}`,
       Next: "Nästa",
     });
@@ -245,5 +244,14 @@ const bookingService = (region, mock = false) => ({
 const getShortDate = (date) => {
   return date.toISOString().split("T")[0];
 };
+
+const replaceSpecialChars = (inputValue) =>
+  inputValue
+    .replace(/å/g, "a")
+    .replace(/Å/g, "A")
+    .replace(/ä/g, "a")
+    .replace(/Ä/g, "A")
+    .replace(/ö/g, "o")
+    .replace(/Ö/g, "O");
 
 module.exports = bookingService;

@@ -27,7 +27,7 @@ module.exports = {
       Visby: 12,
     },
   },
-  Gavleborg: {
+  Gävleborg: {
     id: 19,
     passportId: 29,
     cardId: 28,
@@ -48,7 +48,7 @@ module.exports = {
       Varberg: 95,
     },
   },
-  Jamtland: {
+  Jämtland: {
     id: 18,
     passportId: 31,
     cardId: 30,
@@ -60,7 +60,7 @@ module.exports = {
       Östersund: 9,
     },
   },
-  Jonkoping: {
+  Jönkoping: {
     id: 59,
     passportId: 64,
     cardId: 63,
@@ -105,7 +105,7 @@ module.exports = {
       Piteå: 70,
     },
   },
-  Skane: {
+  Skåne: {
     id: 77,
     passportId: 79,
     cardId: 78,
@@ -141,7 +141,7 @@ module.exports = {
       "Södra Roslagen": 48,
     },
   },
-  Sodermanland: {
+  Södermanland: {
     id: 60,
     passportId: 62,
     cardId: 61,
@@ -164,7 +164,7 @@ module.exports = {
       Östhammar: 33,
     },
   },
-  Varmland: {
+  Värmland: {
     id: 16,
     passportId: 23,
     cardId: 22,
@@ -175,7 +175,7 @@ module.exports = {
       Torsby: 57,
     },
   },
-  Vasterbotten: {
+  Västerbotten: {
     id: 13,
     passportId: 35,
     cardId: 34,
@@ -187,7 +187,7 @@ module.exports = {
       Vilhelmina: 75,
     },
   },
-  Vasternorrland: {
+  Västernorrland: {
     id: 14,
     passportId: 37,
     cardId: 36,
@@ -200,7 +200,7 @@ module.exports = {
       Örnsköldsvik: 78,
     },
   },
-  Vastmanland: {
+  Västmanland: {
     id: 1,
     passportId: 3,
     cardId: 2,
@@ -211,7 +211,7 @@ module.exports = {
       Västerås: 93,
     },
   },
-  VastraGotaland: {
+  VästraGötaland: {
     id: 40,
     passportId: 42,
     cardId: 41,
@@ -233,7 +233,7 @@ module.exports = {
       Åmål: 23,
     },
   },
-  Orebro: {
+  Örebro: {
     id: 17,
     passportId: 39,
     cardId: 38,
@@ -245,7 +245,7 @@ module.exports = {
       Örebro: 8,
     },
   },
-  Ostergotland: {
+  Östergötland: {
     id: 56,
     passportId: 58,
     cardId: 57,
