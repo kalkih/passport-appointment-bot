@@ -1,29 +1,14 @@
+const yargs = require("yargs/yargs");
+const { hideBin } = require("yargs/helpers");
+const argv = yargs(hideBin(process.argv)).argv;
 const locations = require("./locations");
 const logger = require("./logger");
 const tracker = require("./tracker");
 const validateConfig = require("./validateConfig");
-const yargs = require("yargs/yargs");
-const { hideBin } = require("yargs/helpers");
-const argv = yargs(hideBin(process.argv)).argv;
-const fs = require("fs");
-const path = require("path");
+const readConfig = require("./readConfig");
 
-let config;
-try {
-  let configPath;
-  if (process.pkg) {
-    configPath = path.join(path.dirname(process.execPath), "./config.json");
-  } else {
-    configPath = path.join(process.cwd(), "./config.json");
-  }
-  config = JSON.parse(fs.readFileSync(configPath));
-} catch {
-  logger.error("Missing or invalid configuration file");
-  process.exit();
-}
-
+const config = readConfig();
 const bookingService = require("./bookingService")(config.region, argv.mock);
-
 const locationQueue = [];
 
 (async () => {
