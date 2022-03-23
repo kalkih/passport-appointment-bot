@@ -82,13 +82,20 @@ const checkAvailableSlotsForLocation = async ({ name, id }) => {
         process.exit();
       } else {
         logger.error(`Failed booking slot ${timeslot}`);
+
+        if (await bookingService.recover()) {
+          logger.info("Recovered booking session");
+        } else {
+          logger.error("Could not recover booking session...");
+          process.exit();
+        }
       }
     } else {
       logger.verbose(`No free timeslots found, ${bookedSlots.length} reserved`);
+      addDays(currentDate);
     }
 
     tracker.track();
-    addDays(currentDate);
   }
   logger.verbose("Max date reached, checking next location...");
 

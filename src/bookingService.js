@@ -20,6 +20,10 @@ const generatePostUrl = (region) =>
   `https://bokapass.nemoq.se/Booking/Booking/Next/${replaceSpecialChars(
     region.toLowerCase()
   )}`;
+const generatePreviousUrl = (region) =>
+  `https://bokapass.nemoq.se/Booking/Booking/Previous/${replaceSpecialChars(
+    region.toLowerCase()
+  )}`;
 
 const bookingService = (region, mock = false) => ({
   baseUrl: generateBaseUrl(region),
@@ -98,6 +102,22 @@ const bookingService = (region, mock = false) => ({
       logger.verbose(`Failed checking week of: ${getShortDate(date)}`);
     }
     return [[], []];
+  },
+  async recover() {
+    let recovered = false;
+    for (let index = 0; index < 6; index++) {
+      logger.warn(`Trying to recover booking session... ${index + 1}`);
+      const res = await fetch(`${generatePreviousUrl(this.region)}?id=1`);
+      const $ = cheerio.load(await res.text());
+
+      const title = $(".header h1").text();
+
+      if (title === "Välj tid") {
+        recovered = true;
+        break;
+      }
+    }
+    return recovered;
   },
   async bookSlot(serviceTypeId, timeslot, location, config) {
     try {
