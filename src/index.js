@@ -27,8 +27,13 @@ const locationQueue = [];
     if (region.locations[location]) {
       locationQueue.push({ name: location, id: region.locations[location] });
     } else {
-      logger.error(`Location not found: ${location}, skipping...`);
+      logger.warn(`Location not found: ${location}, skipping...`);
     }
+  }
+
+  if (locationQueue.length === 0) {
+    logger.error("No valid locations, exiting...");
+    process.exit();
   }
   logger.success(
     `Valid locations ${locationQueue.map(({ name }) => name).join(", ")}`
