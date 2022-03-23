@@ -7,6 +7,11 @@ const locations = require("./locations");
 
 const NUMBER_OF_PEOPLE = 1;
 
+const BookingType = {
+  PASSPORT: "passport",
+  ID_CARD: "id",
+};
+
 const generateBaseUrl = (region) =>
   `https://bokapass.nemoq.se/Booking/Booking/Index/${replaceSpecialChars(
     region.toLowerCase()
@@ -97,7 +102,11 @@ const bookingService = (region, mock = false) => ({
   async bookSlot(serviceTypeId, timeslot, location, config) {
     try {
       await this.selectSlot(serviceTypeId, timeslot, location);
-      await this.providePersonalDetails(config.firstname, config.lastname);
+      await this.providePersonalDetails(
+        config.firstname,
+        config.lastname,
+        config.type
+      );
       await this.confirmSlot();
       await this.provideContactDetails(config.email, config.phone);
       return await this.finalizeBooking();
@@ -129,7 +138,7 @@ const bookingService = (region, mock = false) => ({
       throw new Error();
     }
   },
-  async providePersonalDetails(firstname, lastname) {
+  async providePersonalDetails(firstname, lastname, type) {
     logger.verbose(`Providing personal details for booking`);
     const res = await this.postRequest({
       "Customers[0].BookingCustomerId": 0,
@@ -142,11 +151,13 @@ const bookingService = (region, mock = false) => ({
       "Customers[0].BookingFieldValues[1].BookingFieldTextName":
         "BF_2_EFTERNAMN",
       "Customers[0].BookingFieldValues[1].FieldTypeId": 1,
-      "Customers[0].Services[0].IsSelected": true,
-      "Customers[0].Services[0].ServiceId": locations[this.region].passportId,
+      "Customers[0].Services[0].IsSelected": type === BookingType.PASSPORT,
+      "Customers[0].Services[0].ServiceId":
+        locations[this.region].passportServiceId,
       "Customers[0].Services[0].ServiceTextName": `SERVICE_2_PASSANSÖKAN${this.region.toUpperCase()}`,
-      "Customers[0].Services[1].IsSelected": false,
-      "Customers[0].Services[1].ServiceId": locations[this.region].cardId,
+      "Customers[0].Services[1].IsSelected": type === BookingType.ID_CARD,
+      "Customers[0].Services[1].ServiceId":
+        locations[this.region].cardServiceId,
       "Customers[0].Services[1].ServiceTextName": `SERVICE_2_ID-KORT${this.region.toUpperCase()}`,
       Next: "Nästa",
     });

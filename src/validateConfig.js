@@ -8,6 +8,7 @@ const requiredProperties = [
   "phone",
   "firstname",
   "lastname",
+  "type",
 ];
 
 const validateConfig = (config) => {
@@ -18,6 +19,14 @@ const validateConfig = (config) => {
       process.exit();
     }
   });
+
+  if (!["passport", "id"].includes(config.type)) {
+    logger.error(
+      'Invalid configuration of "type", valid options are "passport" and "id".'
+    );
+    process.exit();
+  }
+
   logger.log("success", "Configuration is valid");
 };
 

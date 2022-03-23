@@ -1,8 +1,8 @@
 module.exports = {
   Blekinge: {
     id: 74,
-    passportId: 76,
-    cardId: 75,
+    passportServiceId: 76,
+    cardServiceId: 75,
     locations: {
       Karlshamn: 106,
       Karlskrona: 105,
@@ -10,8 +10,8 @@ module.exports = {
   },
   Dalarna: {
     id: 15,
-    passportId: 27,
-    cardId: 26,
+    passportServiceId: 27,
+    cardServiceId: 26,
     locations: {
       Avesta: 50,
       Borlänge: 6,
@@ -21,16 +21,16 @@ module.exports = {
   },
   Gotland: {
     id: 21,
-    passportId: 27,
-    cardId: 26,
+    passportServiceId: 27,
+    cardServiceId: 26,
     locations: {
       Visby: 12,
     },
   },
   Gävleborg: {
     id: 19,
-    passportId: 29,
-    cardId: 28,
+    passportServiceId: 29,
+    cardServiceId: 28,
     locations: {
       Bollnäs: 37,
       Gävle: 13,
@@ -39,8 +39,8 @@ module.exports = {
   },
   Halland: {
     id: 65,
-    passportId: 67,
-    cardId: 66,
+    passportServiceId: 67,
+    cardServiceId: 66,
     locations: {
       Falkenberg: 96,
       Halmstad: 97,
@@ -50,8 +50,8 @@ module.exports = {
   },
   Jämtland: {
     id: 18,
-    passportId: 31,
-    cardId: 30,
+    passportServiceId: 31,
+    cardServiceId: 30,
     locations: {
       Funäsdalen: 62,
       Strömsund: 73,
@@ -62,8 +62,8 @@ module.exports = {
   },
   Jönkoping: {
     id: 59,
-    passportId: 64,
-    cardId: 63,
+    passportServiceId: 64,
+    cardServiceId: 63,
     locations: {
       Eksjö: 82,
       Jönköping: 83,
@@ -72,8 +72,8 @@ module.exports = {
   },
   Kalmar: {
     id: 69,
-    passportId: 72,
-    cardId: 73,
+    passportServiceId: 72,
+    cardServiceId: 73,
     locations: {
       Kalmar: 102,
       Oskarshamn: 103,
@@ -82,8 +82,8 @@ module.exports = {
   },
   Kronoberg: {
     id: 68,
-    passportId: 71,
-    cardId: 70,
+    passportServiceId: 71,
+    cardServiceId: 70,
     locations: {
       Ljungby: 98,
       Växjö: 99,
@@ -92,8 +92,8 @@ module.exports = {
   },
   Norrbotten: {
     id: 53,
-    passportId: 54,
-    cardId: 55,
+    passportServiceId: 54,
+    cardServiceId: 55,
     locations: {
       Arvidsjaur: 60,
       Boden: 61,
@@ -107,8 +107,8 @@ module.exports = {
   },
   Skåne: {
     id: 77,
-    passportId: 79,
-    cardId: 78,
+    passportServiceId: 79,
+    cardServiceId: 78,
     locations: {
       Eslöv: 110,
       Helsingborg: 111,
@@ -125,8 +125,8 @@ module.exports = {
   },
   Stockholm: {
     id: 47,
-    passportId: 52,
-    cardId: 48,
+    passportServiceId: 52,
+    cardServiceId: 48,
     locations: {
       Flemingsberg: 38,
       Globen: 40,
@@ -143,8 +143,8 @@ module.exports = {
   },
   Södermanland: {
     id: 60,
-    passportId: 62,
-    cardId: 61,
+    passportServiceId: 62,
+    cardServiceId: 61,
     locations: {
       Eskilstuna: 85,
       Katrineholm: 86,
@@ -155,8 +155,8 @@ module.exports = {
   },
   Uppsala: {
     id: 20,
-    passportId: 25,
-    cardId: 24,
+    passportServiceId: 25,
+    cardServiceId: 24,
     locations: {
       Enköping: 3,
       Tierp: 34,
@@ -166,8 +166,8 @@ module.exports = {
   },
   Värmland: {
     id: 16,
-    passportId: 23,
-    cardId: 22,
+    passportServiceId: 23,
+    cardServiceId: 22,
     locations: {
       Arvika: 49,
       Karlstad: 7,
@@ -177,8 +177,8 @@ module.exports = {
   },
   Västerbotten: {
     id: 13,
-    passportId: 35,
-    cardId: 34,
+    passportServiceId: 35,
+    cardServiceId: 34,
     locations: {
       Lycksele: 69,
       Skellefteå: 11,
@@ -189,8 +189,8 @@ module.exports = {
   },
   Västernorrland: {
     id: 14,
-    passportId: 37,
-    cardId: 36,
+    passportServiceId: 37,
+    cardServiceId: 36,
     locations: {
       Härnösand: 10,
       Kramfors: 68,
@@ -202,8 +202,8 @@ module.exports = {
   },
   Västmanland: {
     id: 1,
-    passportId: 3,
-    cardId: 2,
+    passportServiceId: 3,
+    cardServiceId: 2,
     locations: {
       Fagersta: 36,
       Köping: 2,
@@ -213,8 +213,8 @@ module.exports = {
   },
   VästraGötaland: {
     id: 40,
-    passportId: 42,
-    cardId: 41,
+    passportServiceId: 42,
+    cardServiceId: 41,
     locations: {
       Alingsås: 17,
       Borås: 18,
@@ -235,8 +235,8 @@ module.exports = {
   },
   Örebro: {
     id: 17,
-    passportId: 39,
-    cardId: 38,
+    passportServiceId: 39,
+    cardServiceId: 38,
     locations: {
       Hallsberg: 51,
       Karlskoga: 52,
@@ -247,8 +247,8 @@ module.exports = {
   },
   Östergötland: {
     id: 56,
-    passportId: 58,
-    cardId: 57,
+    passportServiceId: 58,
+    cardServiceId: 57,
     locations: {
       Linköping: 90,
       Motala: 91,

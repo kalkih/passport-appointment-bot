@@ -2,7 +2,7 @@
 
 ## ⚠️ **For educational use only** ⚠️
 
-Bot to quickly search for and book an appointment for renewal of a Swedish passport.
+Bot to quickly find and book an appointment for renewal/creation of a Swedish passport or national identity card.
 
 ### What does it do?
 
@@ -19,8 +19,19 @@ The bot can be configured to search for appointments in a specific region & in o
 2. Enter desired configuration values in `config.js`
 3. Run the bot with `npm start`
 4. The bot will automatically exit when an appointment is booked
-5. A booking confirmation should be sent to the configured email and will also be displayed in the console.
+5. A booking confirmation should be sent to the configured email and will also be displayed in the console
+
+### Configuration
+**All options are required**
+* **region**: Desired region
+* **locations**: One or more cities/locations
+* **max_date**: Last date to search for appointment (will search all days in the week of the specified date)
+* **email**: Your email (confirmation email will be sent to this address)
+* **phone**: Your phone number
+* **firstname**: Your first name
+* **lastname**: Your last name
+* **type**: Type of booking (`passport` for passport, or `id` for identity card)
 
 ### Supported locations
 
-Supported regions & cities can be found in `src/locations.js`.
+Supported regions & cities/locations can be found in `src/locations.js`.
