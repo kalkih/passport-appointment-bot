@@ -13,7 +13,7 @@ const tracker = {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2,
       });
-      logger.debug(`CHECKING ${num} WEEKS/s`);
+      logger.info(`CHECKING ${num} WEEKS / SECOND`);
     }, INTERVAL * 1000);
   },
   track() {

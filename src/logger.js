@@ -19,7 +19,7 @@ const colors = {
 };
 
 const logger = createLogger({
-  level: "debug",
+  level: "verbose",
   levels,
   transports: [
     new transports.Console({

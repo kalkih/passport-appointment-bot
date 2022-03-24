@@ -8,8 +8,9 @@ const validateConfig = require("./validateConfig");
 const readConfig = require("./readConfig");
 
 const config = readConfig();
-const bookingService = require("./bookingService")(config.region, argv.mock);
-const locationQueue = [];
+const BookingService = require("./bookingService");
+const maxDate = new Date(config.max_date);
+let pendingBookingPromise = undefined;
 
 (async () => {
   validateConfig(config);
@@ -23,86 +24,137 @@ const locationQueue = [];
   logger.log("success", `Valid region ${config.region}`);
 
   logger.info("Validating configured locations...");
+  const validLocations = [];
   for (const location of config.locations) {
     if (region.locations[location]) {
-      locationQueue.push({ name: location, id: region.locations[location] });
+      validLocations.push({ name: location, id: region.locations[location] });
     } else {
       logger.warn(`Location not found: ${location}, skipping...`);
     }
   }
 
-  if (locationQueue.length === 0) {
+  if (validLocations.length === 0) {
     logger.error("No valid locations, exiting...");
     process.exit();
   }
   logger.success(
-    `Valid locations ${locationQueue.map(({ name }) => name).join(", ")}`
+    `Valid locations ${validLocations.map(({ name }) => name).join(", ")}`
   );
-
-  await bookingService.initSession();
 
   tracker.init();
 
   logger.log("success", "Starting to check for available timeslots");
-  checkAvailableSlotsForLocation(locationQueue[0]);
+  const numOfSessions = Math.min(config.sessions ?? 1, 6);
+  for (let index = 0; index < numOfSessions; index++) {
+    const sessionLocationOrder =
+      numOfSessions === 1 ? validLocations : shuffleArray(validLocations);
+    const sessionStartDate =
+      numOfSessions === 1
+        ? new Date()
+        : randomDate(new Date(), new Date(config.max_date));
+    init(sessionLocationOrder, sessionStartDate);
+  }
 })();
 
-const checkAvailableSlotsForLocation = async ({ name, id }) => {
-  logger.info(`Switching to location: ${name}`);
-  const maxDate = new Date(config.max_date);
-  const currentDate = new Date();
+async function init(locationQueue, date) {
+  const bookingService = new BookingService(config.region, argv.mock);
+  await bookingService.init();
 
-  while (currentDate.getTime() < maxDate.getTime()) {
+  checkAvailableSlotsForLocation(bookingService, [...locationQueue], date);
+}
+
+async function checkAvailableSlotsForLocation(
+  bookingService,
+  locationQueue,
+  date
+) {
+  const { name, id } = locationQueue[0];
+
+  logger.debug(`Switching to location: ${name}`);
+
+  while (date.getTime() < maxDate.getTime()) {
+    await pendingBookingPromise;
+    logger.debug(`Loading ${name} week of ${getShortDate(date)}`);
     const [freeSlots, bookedSlots] = await bookingService.getFreeSlotsForWeek(
       id,
-      currentDate
+      date
     );
 
     if (freeSlots.length && freeSlots.length > 0) {
-      logger.log("success", `Free timeslots found: ${freeSlots.length}`);
-
-      const parent = freeSlots[0].parent;
-      const serviceTypeId = parent.attribs["data-servicetypeid"];
-      const timeslot = parent.attribs["data-fromdatetime"];
-
-      const booking = await bookingService.bookSlot(
-        serviceTypeId,
-        timeslot,
-        id,
-        config
-      );
-
-      if (booking) {
-        logger.log("success", "BOOKING SUCCESSFUL");
-        logger.log("success", `Booking number: \t ${booking.bookingNumber}`);
-        logger.log("success", `Time: \t\t\t ${booking.slot}`);
-        logger.log("success", `Location: \t\t ${booking.expedition}`);
-        logger.log("success", `Email: \t\t\t ${config.email}`);
-        logger.log("success", `Phone: \t\t\t ${config.phone}`);
-        process.exit();
-      } else {
-        logger.error(`Failed booking slot ${timeslot}`);
-
-        if (await bookingService.recover()) {
-          logger.info("Recovered booking session");
-        } else {
-          logger.error("Could not recover booking session...");
-          process.exit();
-        }
+      if (!pendingBookingPromise) {
+        logger.success(
+          `${name} (${getShortDate(date)}) ${freeSlots.length} free time slots`
+        );
+        pendingBookingPromise = handleBooking(bookingService, freeSlots, id);
+        await pendingBookingPromise;
+        pendingBookingPromise = undefined;
       }
     } else {
-      logger.verbose(`No free timeslots found, ${bookedSlots.length} reserved`);
-      addDays(currentDate);
+      logger.verbose(
+        `${name} (${getShortDate(date)}) 0 free - ${
+          bookedSlots.length
+        } reserved`
+      );
+      addDays(date);
     }
 
     tracker.track();
   }
-  logger.verbose("Max date reached, checking next location...");
+  logger.debug("Max date reached, checking next location...");
 
   locationQueue.push(locationQueue.shift());
-  checkAvailableSlotsForLocation(locationQueue[0]);
-};
+  checkAvailableSlotsForLocation(bookingService, locationQueue, new Date());
+}
+
+async function handleBooking(bookingService, freeSlots, locationId) {
+  const parent = freeSlots[0].parent;
+  const serviceTypeId = parent.attribs["data-servicetypeid"];
+  const timeslot = parent.attribs["data-fromdatetime"];
+
+  const booking = await bookingService.bookSlot(
+    serviceTypeId,
+    timeslot,
+    locationId,
+    config
+  );
+
+  if (booking) {
+    logger.log("success", "BOOKING SUCCESSFUL");
+    logger.log("success", `Booking number: \t ${booking.bookingNumber}`);
+    logger.log("success", `Time: \t\t\t ${booking.slot}`);
+    logger.log("success", `Location: \t\t ${booking.expedition}`);
+    logger.log("success", `Email: \t\t\t ${config.email}`);
+    logger.log("success", `Phone: \t\t\t ${config.phone}`);
+    process.exit();
+  } else {
+    logger.error(`Failed booking slot ${timeslot}`);
+
+    if (await bookingService.recover()) {
+      logger.info("Recovered booking session");
+    } else {
+      logger.error("Could not recover booking session...");
+      process.exit();
+    }
+  }
+}
+
+function shuffleArray(array) {
+  return array
+    .map((value) => ({ value, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ value }) => value);
+}
+
+function randomDate(start, end) {
+  return new Date(
+    start.getTime() + Math.random() * (end.getTime() - start.getTime())
+  );
+}
 
 const addDays = (date) => {
   date.setDate(date.getDate() + 7);
+};
+
+const getShortDate = (date) => {
+  return date.toISOString().split("T")[0];
 };

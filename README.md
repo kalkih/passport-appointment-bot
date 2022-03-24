@@ -31,6 +31,7 @@ The bot can be configured to search for appointments in a specific region & in o
 * **firstname**: Your first name
 * **lastname**: Your last name
 * **type**: Type of booking (`passport` for passport, or `id` for identity card)
+* **sessions**: Number of concurrent booking sessions to run, higher number equals faster checking of available times and opens up for checking several locations in parallel, (will still only book one appointment in the end) **(max 6)**
 
 ### Supported locations
 

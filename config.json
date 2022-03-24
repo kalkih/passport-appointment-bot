@@ -6,5 +6,6 @@
   "phone": "0701234567",
   "firstname": "John",
   "lastname": "Doe",
-  "type": "passport"
+  "type": "passport",
+  "sessions": "1"
 }

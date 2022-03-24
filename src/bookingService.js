@@ -1,6 +1,5 @@
 const nodeFetch = require("node-fetch");
 const fetchCookie = require("fetch-cookie");
-const fetch = fetchCookie(nodeFetch);
 const logger = require("./logger");
 const cheerio = require("cheerio");
 const locations = require("./locations");
@@ -25,23 +24,37 @@ const generatePreviousUrl = (region) =>
     region.toLowerCase()
   )}`;
 
-const bookingService = (region, mock = false) => ({
-  baseUrl: generateBaseUrl(region),
-  postUrl: generatePostUrl(region),
-  region,
-  sessionId: undefined,
-  async initSession() {
+class BookingService {
+  region = undefined;
+  mock = false;
+  fetch = undefined;
+
+  constructor(region, mock = false) {
+    this.region = region;
+    this.mock = mock;
+    this.fetch = fetchCookie(nodeFetch);
+  }
+
+  get baseUrl() {
+    return generateBaseUrl(this.region);
+  }
+
+  get postUrl() {
+    return generatePostUrl(this.region);
+  }
+
+  async init() {
     logger.info("Starting booking session...");
-    await fetch(this.baseUrl);
+    await this.fetch(this.baseUrl);
 
     await this.postRequest({
       FormId: 1,
-      ServiceGroupId: locations[region].id,
+      ServiceGroupId: locations[this.region].id,
       StartNextButton: "Boka ny tid",
     });
     logger.log("success", "Started booking session");
 
-    logger.info("Accepting booking terms...");
+    logger.debug("Accepting booking terms...");
     await this.postRequest({
       AgreementText: "123",
       AcceptInformationStorage: true,
@@ -50,17 +63,18 @@ const bookingService = (region, mock = false) => ({
     });
     logger.log("success", "Accepted booking terms");
 
-    logger.info("Setting residency...");
+    logger.debug("Setting residency...");
     await this.postRequest({
       "ServiceCategoryCustomers[0].CustomerIndex": 0,
       "ServiceCategoryCustomers[0].ServiceCategoryId": 2,
       Next: "Nästa",
     });
     logger.log("success", "Residency set");
-  },
+  }
+
   async postRequest(body) {
     try {
-      const response = await fetch(this.postUrl, {
+      const response = await this.fetch(this.postUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -77,22 +91,22 @@ const bookingService = (region, mock = false) => ({
       logger.error(error.message);
       this.postRequest(body);
     }
-  },
-  async getFreeSlotsForWeek(location, date) {
-    logger.info(`Loading week of: ${getShortDate(date)}`);
+  }
+
+  async getFreeSlotsForWeek(locationId, date) {
     try {
       const res = await this.postRequest({
         FormId: 1,
         NumberOfPeople: NUMBER_OF_PEOPLE,
         RegionId: 0,
-        SectionId: location,
+        SectionId: locationId,
         NQServiceTypeId: 1,
         FromDateString: getShortDate(date),
         SearchTimeHour: 12,
       });
       const $ = cheerio.load(await res.text());
 
-      logger.verbose(`Checking week of: ${getShortDate(date)}`);
+      logger.debug(`Checking week of: ${getShortDate(date)}`);
       const freeSlots = $(".timecell script");
       const bookedSlots = $(".timecell label");
 
@@ -102,12 +116,13 @@ const bookingService = (region, mock = false) => ({
       logger.verbose(`Failed checking week of: ${getShortDate(date)}`);
     }
     return [[], []];
-  },
+  }
+
   async recover() {
     let recovered = false;
     for (let index = 0; index < 6; index++) {
       logger.warn(`Trying to recover booking session... ${index + 1}`);
-      const res = await fetch(`${generatePreviousUrl(this.region)}?id=1`);
+      const res = await this.fetch(`${generatePreviousUrl(this.region)}?id=1`);
       const $ = cheerio.load(await res.text());
 
       const title = $(".header h1").text();
@@ -118,7 +133,8 @@ const bookingService = (region, mock = false) => ({
       }
     }
     return recovered;
-  },
+  }
+
   async bookSlot(serviceTypeId, timeslot, location, config) {
     try {
       await this.selectSlot(serviceTypeId, timeslot, location);
@@ -135,9 +151,10 @@ const bookingService = (region, mock = false) => ({
       logger.error(error);
       return undefined;
     }
-  },
+  }
+
   async selectSlot(serviceTypeId, timeslot, location) {
-    logger.verbose(`Selecting timeslot: ${timeslot}...`);
+    logger.verbose(`Selecting timeslot: ${timeslot}`);
     const res = await this.postRequest({
       FormId: 2,
       ReservedServiceTypeId: serviceTypeId,
@@ -157,7 +174,8 @@ const bookingService = (region, mock = false) => ({
     if (title !== "Uppgifter till bokningen") {
       throw new Error();
     }
-  },
+  }
+
   async providePersonalDetails(firstname, lastname, type) {
     logger.verbose(`Providing personal details for booking`);
     const res = await this.postRequest({
@@ -187,7 +205,8 @@ const bookingService = (region, mock = false) => ({
     if (title !== "Viktig information") {
       throw new Error();
     }
-  },
+  }
+
   async confirmSlot() {
     logger.verbose(`Confirming selected slot`);
     const res = await this.postRequest({
@@ -199,7 +218,8 @@ const bookingService = (region, mock = false) => ({
     if (title !== "Kontaktuppgifter") {
       throw new Error();
     }
-  },
+  }
+
   async provideContactDetails(email, phone) {
     logger.verbose(`Providing contact details for booking`);
     const res = await this.postRequest({
@@ -232,9 +252,10 @@ const bookingService = (region, mock = false) => ({
     if (title !== "Bekräfta bokning") {
       throw new Error();
     }
-  },
+  }
+
   async finalizeBooking() {
-    if (mock) {
+    if (this.mock) {
       logger.verbose(`Mocking booking...`);
       return {
         bookingNumber: "123456789",
@@ -269,8 +290,8 @@ const bookingService = (region, mock = false) => ({
       slot,
       expedition,
     };
-  },
-});
+  }
+}
 
 const getShortDate = (date) => {
   return date.toISOString().split("T")[0];
@@ -285,4 +306,4 @@ const replaceSpecialChars = (inputValue) =>
     .replace(/ö/g, "o")
     .replace(/Ö/g, "O");
 
-module.exports = bookingService;
+module.exports = BookingService;
