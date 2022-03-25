@@ -5,6 +5,8 @@ const cheerio = require("cheerio");
 const locations = require("./locations");
 
 const NUMBER_OF_PEOPLE = 1;
+const TITLE_SELECTOR = ".header h1";
+const VALIDATION_ERROR_SELECTOR = ".validation-summary-errors";
 
 const BookingType = {
   PASSPORT: "passport",
@@ -125,7 +127,7 @@ class BookingService {
       const res = await this.fetch(`${generatePreviousUrl(this.region)}?id=1`);
       const $ = cheerio.load(await res.text());
 
-      const title = $(".header h1").text();
+      const title = $(TITLE_SELECTOR).text();
 
       if (title === "Välj tid") {
         recovered = true;
@@ -148,7 +150,14 @@ class BookingService {
       return await this.finalizeBooking();
     } catch (error) {
       logger.error("Something went wrong when trying to book timeslot");
-      logger.error(error);
+      if (error.page) {
+        const $ = error.page;
+        const html = $.html();
+        const title = $(TITLE_SELECTOR).text();
+        const errors = $(VALIDATION_ERROR_SELECTOR).text();
+        logger.error(`Unexpected page`, { title, errors, html });
+      }
+      logger.error(error.stack);
       return undefined;
     }
   }
@@ -169,10 +178,12 @@ class BookingService {
       ReservedDateTime: timeslot,
     });
     const $ = cheerio.load(await res.text());
-    const title = $(".header h1").text();
+    const title = $(TITLE_SELECTOR).text();
 
     if (title !== "Uppgifter till bokningen") {
-      throw new Error();
+      const error = new Error();
+      error.page = $;
+      throw error;
     }
   }
 
@@ -200,10 +211,12 @@ class BookingService {
       Next: "Nästa",
     });
     const $ = cheerio.load(await res.text());
-    const title = $(".header h1").text();
+    const title = $(TITLE_SELECTOR).text();
 
     if (title !== "Viktig information") {
-      throw new Error();
+      const error = new Error();
+      error.page = $;
+      throw error;
     }
   }
 
@@ -213,10 +226,12 @@ class BookingService {
       Next: "Nästa",
     });
     const $ = cheerio.load(await res.text());
-    const title = $(".header h1").text();
+    const title = $(TITLE_SELECTOR).text();
 
     if (title !== "Kontaktuppgifter") {
-      throw new Error();
+      const error = new Error();
+      error.page = $;
+      throw error;
     }
   }
 
@@ -247,10 +262,12 @@ class BookingService {
       Next: "Nästa",
     });
     const $ = cheerio.load(await res.text());
-    const title = $(".header h1").text();
+    const title = $(TITLE_SELECTOR).text();
 
     if (title !== "Bekräfta bokning") {
-      throw new Error();
+      const error = new Error();
+      error.page = $;
+      throw error;
     }
   }
 
@@ -275,10 +292,12 @@ class BookingService {
       "ContactViewModel.SelectedContacts[3].IsSelected": false,
     });
     const $ = cheerio.load(await res.text());
-    const title = $(".header h1").text();
+    const title = $(TITLE_SELECTOR).text();
 
     if (title !== "Din bokning är nu klar") {
-      throw new Error();
+      const error = new Error();
+      error.page = $;
+      throw error;
     }
 
     const bookingNumber = $(".control-freetext").eq(0).text();
