@@ -7,6 +7,8 @@ const locations = require("./locations");
 const NUMBER_OF_PEOPLE = 1;
 const TITLE_SELECTOR = ".header h1";
 const VALIDATION_ERROR_SELECTOR = ".validation-summary-errors";
+const EXISTING_BOOKING_ERROR_TEXT =
+  "Det går endast att göra en bokning per e-postadress/telefonnummer";
 
 const BookingType = {
   PASSPORT: "passport",
@@ -163,7 +165,7 @@ class BookingService {
   }
 
   async selectSlot(serviceTypeId, timeslot, location) {
-    logger.verbose(`Selecting timeslot: ${timeslot}`);
+    logger.verbose(`Selecting timeslot (${timeslot})`);
     const res = await this.postRequest({
       FormId: 2,
       ReservedServiceTypeId: serviceTypeId,
@@ -188,7 +190,7 @@ class BookingService {
   }
 
   async providePersonalDetails(firstname, lastname, type) {
-    logger.verbose(`Providing personal details for booking`);
+    logger.verbose(`Providing personal details`);
     const res = await this.postRequest({
       "Customers[0].BookingCustomerId": 0,
       "Customers[0].BookingFieldValues[0].Value": firstname,
@@ -236,7 +238,7 @@ class BookingService {
   }
 
   async provideContactDetails(email, phone) {
-    logger.verbose(`Providing contact details for booking`);
+    logger.verbose(`Providing contact details`);
     const res = await this.postRequest({
       EmailAddress: email,
       ConfirmEmailAddress: email,
@@ -293,6 +295,16 @@ class BookingService {
     });
     const $ = cheerio.load(await res.text());
     const title = $(TITLE_SELECTOR).text();
+
+    if (title === "Bekräfta bokning") {
+      const validationErrorText = $(VALIDATION_ERROR_SELECTOR).text();
+      if (validationErrorText.includes(EXISTING_BOOKING_ERROR_TEXT)) {
+        logger.error(
+          "An appointment with the same email and/or phone number already exists"
+        );
+        process.exit();
+      }
+    }
 
     if (title !== "Din bokning är nu klar") {
       const error = new Error();
