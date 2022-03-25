@@ -2,7 +2,7 @@
 
 > Bot to automatically find and book an appointment for renewal/creation of a Swedish passport or national identity card.
 
-> _Bott som söker och automatiskt bokar flrst lediga tid för att förnya pass eller nationellt id kort._
+> _Bott som automatiskt söker och bokar första lediga tid för att förnya pass eller nationellt id kort._
 
 ## ⚠️ **For educational use only** ⚠️
 
@@ -50,6 +50,11 @@ All options are required
 ### Good to know
 
 Only one appointment can be booked per email and phone number.
+
+### Related projects
+
+- [Pass-fur-alle](https://github.com/jonkpirateboy/Pass-fur-alle) - Python & Selenium solution by @jonkpirateboy
+- [passport_booker_se](https://github.com/elias123tre/passport_booker_se) - Python based solution by @elias123tre
 
 ### Supported Regions & Locations
 
