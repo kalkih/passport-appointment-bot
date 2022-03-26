@@ -46,6 +46,7 @@ All options are required
 | lastname  | Your last name                                                                                                                                                                                                               |
 | type      | Type of booking (`passport` for passport, or `id` for identity card)                                                                                                                                                         |
 | sessions  | Number of concurrent booking sessions to run, higher number equals faster checking of available times and opens up for checking several locations in parallel, (will still only book one appointment in the end) **(max 6)** |
+| throttle  | Add a timeout (in seconds) between searches                                                                                                                                                                                  |
 
 ### Good to know
 

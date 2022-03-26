@@ -99,6 +99,11 @@ async function checkAvailableSlotsForLocation(
     }
 
     tracker.track();
+    if (config.throttle) {
+      await new Promise((resolve) =>
+        setTimeout(resolve, config.throttle * 1000)
+      );
+    }
   }
   logger.debug("Max date reached, checking next location...");
 

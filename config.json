@@ -7,5 +7,6 @@
   "firstname": "John",
   "lastname": "Doe",
   "type": "passport",
-  "sessions": "1"
+  "sessions": 1,
+  "throttle": 0
 }
