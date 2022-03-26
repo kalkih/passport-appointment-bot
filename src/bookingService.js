@@ -9,11 +9,6 @@ const VALIDATION_ERROR_SELECTOR = ".validation-summary-errors";
 const EXISTING_BOOKING_ERROR_TEXT =
   "Det går endast att göra en bokning per e-postadress/telefonnummer";
 
-const BookingType = {
-  PASSPORT: "passport",
-  ID_CARD: "id",
-};
-
 const generateBaseUrl = (region) =>
   `https://bokapass.nemoq.se/Booking/Booking/Index/${replaceSpecialChars(
     region.toLowerCase()

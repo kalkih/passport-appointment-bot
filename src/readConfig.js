@@ -21,11 +21,6 @@ const readConfig = () => {
       config.lastname = [config.lastname];
     }
 
-    if (config.firstname.length !== config.lastname.length) {
-      logger.error("Same amount of firstnames & lastnames has to be provided");
-      throw new Error();
-    }
-
     return config;
   } catch {
     logger.error("Missing or invalid configuration file");
