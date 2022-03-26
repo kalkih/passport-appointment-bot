@@ -44,13 +44,15 @@ All options are required
 | phone     | Your phone number                                                                                                                                                                                                            |
 | firstname | Your first name, or several firstnames if booking for more than one person e.g. `(["John", "Jane"])`                                                                                                                         |
 | lastname  | Your last name, or several lastnames if booking for more than one person e.g. `(["Doe", "Doe"])`                                                                                                                             |
-| type      | Type of booking (`passport` for passport, or `id` for identity card)                                                                                                                                                         |
+| passport  | Set to `true` if the booking appointment is for passport, else `false`.                                                                                                                                                      |
+| id        | Set to `true` if the booking appointment is for national identity card, else `false`.                                                                                                                                        |
 | sessions  | Number of concurrent booking sessions to run, higher number equals faster checking of available times and opens up for checking several locations in parallel, (will still only book one appointment in the end) **(max 6)** |
 | throttle  | Add a timeout (in seconds) between searches                                                                                                                                                                                  |
 
 ### Good to know
 
 - Only one appointment can be booked per email and phone number.
+- Both passport & national identity card can be renewed in one appointment, both options can therefore be set to true.
 - Searching for appointment for more than one person at a time requires a longer appointment time and are thus harder to find.
 - A maximum of 8 people can be booked in one appointment
 

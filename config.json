@@ -6,7 +6,8 @@
   "phone": "0701234567",
   "firstname": ["John"],
   "lastname": ["Doe"],
-  "type": "passport",
+  "passport": true,
+  "id": false,
   "sessions": 1,
   "throttle": 0
 }

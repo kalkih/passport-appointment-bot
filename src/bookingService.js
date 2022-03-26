@@ -158,7 +158,8 @@ class BookingService {
       await this.providePersonalDetails(
         config.firstname,
         config.lastname,
-        config.type
+        config.passport,
+        config.id
       );
       await this.confirmSlot();
       await this.provideContactDetails(config.email, config.phone);
@@ -202,7 +203,7 @@ class BookingService {
     }
   }
 
-  async providePersonalDetails(firstname, lastname, type) {
+  async providePersonalDetails(firstname, lastname, passport, idCard) {
     logger.verbose(`Providing personal details`);
     const customerData = firstname.map((_, index) => ({
       [`Customers[${index}].BookingCustomerId`]: 0,
@@ -216,13 +217,11 @@ class BookingService {
       [`Customers[${index}].BookingFieldValues[1].BookingFieldTextName`]:
         "BF_2_EFTERNAMN",
       [`Customers[${index}].BookingFieldValues[1].FieldTypeId`]: 1,
-      [`Customers[${index}].Services[0].IsSelected`]:
-        type === BookingType.PASSPORT,
+      [`Customers[${index}].Services[0].IsSelected`]: passport,
       [`Customers[${index}].Services[0].ServiceId`]:
         locations[this.region].passportServiceId,
       [`Customers[${index}].Services[0].ServiceTextName`]: `SERVICE_2_PASSANSÖKAN${this.region.toUpperCase()}`,
-      [`Customers[${index}].Services[1].IsSelected`]:
-        type === BookingType.ID_CARD,
+      [`Customers[${index}].Services[1].IsSelected`]: idCard,
       [`Customers[${index}].Services[1].ServiceId`]:
         locations[this.region].cardServiceId,
       [`Customers[${index}].Services[1].ServiceTextName`]: `SERVICE_2_ID-KORT${this.region.toUpperCase()}`,

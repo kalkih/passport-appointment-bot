@@ -8,7 +8,8 @@ const requiredProperties = [
   "phone",
   "firstname",
   "lastname",
-  "type",
+  "passport",
+  "id",
 ];
 
 const validateConfig = (config) => {
@@ -20,9 +21,14 @@ const validateConfig = (config) => {
     }
   });
 
-  if (!["passport", "id"].includes(config.type)) {
+  if (config.firstname.length !== config.lastname.length) {
+    logger.error("Same amount of firstnames & lastnames has to be provided");
+    process.exit();
+  }
+
+  if (!config.passport && !config.id) {
     logger.error(
-      'Invalid configuration of "type", valid options are "passport" and "id".'
+      "Configuration options passport & id can't both be set to false"
     );
     process.exit();
   }
