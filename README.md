@@ -42,15 +42,17 @@ All options are required
 | max_date  | Last date to search for appointment (will search all days in the week of the specified date)                                                                                                                                 |
 | email     | Your email (confirmation email will be sent to this address)                                                                                                                                                                 |
 | phone     | Your phone number                                                                                                                                                                                                            |
-| firstname | Your first name                                                                                                                                                                                                              |
-| lastname  | Your last name                                                                                                                                                                                                               |
+| firstname | Your first name, or several firstnames if booking for more than one person e.g. `(["John", "Jane"])`                                                                                                                         |
+| lastname  | Your last name, or several lastnames if booking for more than one person e.g. `(["Doe", "Doe"])`                                                                                                                             |
 | type      | Type of booking (`passport` for passport, or `id` for identity card)                                                                                                                                                         |
 | sessions  | Number of concurrent booking sessions to run, higher number equals faster checking of available times and opens up for checking several locations in parallel, (will still only book one appointment in the end) **(max 6)** |
 | throttle  | Add a timeout (in seconds) between searches                                                                                                                                                                                  |
 
 ### Good to know
 
-Only one appointment can be booked per email and phone number.
+- Only one appointment can be booked per email and phone number.
+- Searching for appointment for more than one person at a time requires a longer appointment time and are thus harder to find.
+- A maximum of 8 people can be booked in one appointment
 
 ### Related projects
 

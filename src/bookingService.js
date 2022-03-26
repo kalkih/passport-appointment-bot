@@ -4,7 +4,6 @@ const logger = require("./logger");
 const cheerio = require("cheerio");
 const locations = require("./locations");
 
-const NUMBER_OF_PEOPLE = 1;
 const TITLE_SELECTOR = ".header h1";
 const VALIDATION_ERROR_SELECTOR = ".validation-summary-errors";
 const EXISTING_BOOKING_ERROR_TEXT =
@@ -32,11 +31,13 @@ class BookingService {
   region = undefined;
   mock = false;
   fetch = undefined;
+  numberOfPeople = undefined;
 
-  constructor(region, mock = false) {
+  constructor(region, numberOfPeople = 1, mock = false) {
     this.region = region;
     this.mock = mock;
     this.fetch = fetchCookie(nodeFetch);
+    this.numberOfPeople = numberOfPeople;
   }
 
   get baseUrl() {
@@ -56,23 +57,35 @@ class BookingService {
       ServiceGroupId: locations[this.region].id,
       StartNextButton: "Boka ny tid",
     });
-    logger.log("success", "Started booking session");
+    logger.log(
+      "success",
+      `Started booking session for ${this.numberOfPeople} person(s)`
+    );
 
     logger.debug("Accepting booking terms...");
     await this.postRequest({
       AgreementText: "123",
       AcceptInformationStorage: true,
-      NumberOfPeople: NUMBER_OF_PEOPLE,
+      NumberOfPeople: this.numberOfPeople,
       Next: "Nästa",
     });
     logger.log("success", "Accepted booking terms");
 
     logger.debug("Setting residency...");
-    await this.postRequest({
-      "ServiceCategoryCustomers[0].CustomerIndex": 0,
-      "ServiceCategoryCustomers[0].ServiceCategoryId": 2,
-      Next: "Nästa",
-    });
+    await this.postRequest(
+      [...Array(this.numberOfPeople)]
+        .map((_, index) => ({
+          [`ServiceCategoryCustomers[${index}].CustomerIndex`]: index,
+          [`ServiceCategoryCustomers[${index}].ServiceCategoryId`]: 2,
+        }))
+        .reduce(
+          (prev, current) => ({
+            ...prev,
+            ...current,
+          }),
+          { Next: "Nästa" }
+        )
+    );
     logger.log("success", "Residency set");
   }
 
@@ -101,7 +114,7 @@ class BookingService {
     try {
       const res = await this.postRequest({
         FormId: 1,
-        NumberOfPeople: NUMBER_OF_PEOPLE,
+        NumberOfPeople: this.numberOfPeople,
         RegionId: 0,
         SectionId: locationId,
         NQServiceTypeId: 1,
@@ -173,7 +186,7 @@ class BookingService {
       NQServiceTypeId: 1,
       SectionId: location,
       FromDateString: getShortDate(new Date(timeslot)),
-      NumberOfPeople: NUMBER_OF_PEOPLE,
+      NumberOfPeople: this.numberOfPeople,
       SearchTimeHour: 12,
       RegionId: 0,
       Next: "Nästa",
@@ -191,27 +204,32 @@ class BookingService {
 
   async providePersonalDetails(firstname, lastname, type) {
     logger.verbose(`Providing personal details`);
-    const res = await this.postRequest({
-      "Customers[0].BookingCustomerId": 0,
-      "Customers[0].BookingFieldValues[0].Value": firstname,
-      "Customers[0].BookingFieldValues[0].BookingFieldId": 5,
-      "Customers[0].BookingFieldValues[0].BookingFieldTextName": "BF_2_FÖRNAMN",
-      "Customers[0].BookingFieldValues[0].FieldTypeId": 1,
-      "Customers[0].BookingFieldValues[1].Value": lastname,
-      "Customers[0].BookingFieldValues[1].BookingFieldId": 6,
-      "Customers[0].BookingFieldValues[1].BookingFieldTextName":
+    const customerData = firstname.map((_, index) => ({
+      [`Customers[${index}].BookingCustomerId`]: 0,
+      [`Customers[${index}].BookingFieldValues[0].Value`]: firstname[index],
+      [`Customers[${index}].BookingFieldValues[0].BookingFieldId`]: 5,
+      [`Customers[${index}].BookingFieldValues[0].BookingFieldTextName`]:
+        "BF_2_FÖRNAMN",
+      [`Customers[${index}].BookingFieldValues[0].FieldTypeId`]: 1,
+      [`Customers[${index}].BookingFieldValues[1].Value`]: lastname[index],
+      [`Customers[${index}].BookingFieldValues[1].BookingFieldId`]: 6,
+      [`Customers[${index}].BookingFieldValues[1].BookingFieldTextName`]:
         "BF_2_EFTERNAMN",
-      "Customers[0].BookingFieldValues[1].FieldTypeId": 1,
-      "Customers[0].Services[0].IsSelected": type === BookingType.PASSPORT,
-      "Customers[0].Services[0].ServiceId":
+      [`Customers[${index}].BookingFieldValues[1].FieldTypeId`]: 1,
+      [`Customers[${index}].Services[0].IsSelected`]:
+        type === BookingType.PASSPORT,
+      [`Customers[${index}].Services[0].ServiceId`]:
         locations[this.region].passportServiceId,
-      "Customers[0].Services[0].ServiceTextName": `SERVICE_2_PASSANSÖKAN${this.region.toUpperCase()}`,
-      "Customers[0].Services[1].IsSelected": type === BookingType.ID_CARD,
-      "Customers[0].Services[1].ServiceId":
+      [`Customers[${index}].Services[0].ServiceTextName`]: `SERVICE_2_PASSANSÖKAN${this.region.toUpperCase()}`,
+      [`Customers[${index}].Services[1].IsSelected`]:
+        type === BookingType.ID_CARD,
+      [`Customers[${index}].Services[1].ServiceId`]:
         locations[this.region].cardServiceId,
-      "Customers[0].Services[1].ServiceTextName": `SERVICE_2_ID-KORT${this.region.toUpperCase()}`,
-      Next: "Nästa",
-    });
+      [`Customers[${index}].Services[1].ServiceTextName`]: `SERVICE_2_ID-KORT${this.region.toUpperCase()}`,
+    }));
+    const res = await this.postRequest(
+      Object.assign({}, { Next: "Nästa" }, ...customerData)
+    );
     const $ = cheerio.load(await res.text());
     const title = $(TITLE_SELECTOR).text();
 

@@ -4,8 +4,8 @@
   "max_date": "2022-08-01",
   "email": "example@mail.com",
   "phone": "0701234567",
-  "firstname": "John",
-  "lastname": "Doe",
+  "firstname": ["John"],
+  "lastname": ["Doe"],
   "type": "passport",
   "sessions": 1,
   "throttle": 0

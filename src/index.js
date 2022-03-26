@@ -57,7 +57,12 @@ let pendingBookingPromise = undefined;
 })();
 
 async function init(locationQueue, date) {
-  const bookingService = new BookingService(config.region, argv.mock);
+  const numOfPeople = config.firstname.length;
+  const bookingService = new BookingService(
+    config.region,
+    numOfPeople,
+    argv.mock
+  );
   await bookingService.init();
 
   checkAvailableSlotsForLocation(bookingService, [...locationQueue], date);
