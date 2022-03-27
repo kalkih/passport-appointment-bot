@@ -9,7 +9,7 @@ const readConfig = require("./readConfig");
 
 const config = readConfig();
 const BookingService = require("./bookingService");
-const maxDate = new Date(config.max_date);
+const maxDate = getMaxDate();
 let pendingBookingPromise = undefined;
 
 (async () => {
@@ -45,13 +45,14 @@ let pendingBookingPromise = undefined;
 
   logger.log("success", "Starting to check for available timeslots");
   const numOfSessions = Math.min(config.sessions ?? 1, 6);
+  const startDate = getStartDateOfCurrentWeek();
   for (let index = 0; index < numOfSessions; index++) {
     const sessionLocationOrder =
       numOfSessions === 1 ? validLocations : shuffleArray(validLocations);
     const sessionStartDate =
       numOfSessions === 1
-        ? new Date()
-        : randomDate(new Date(), new Date(config.max_date));
+        ? startDate
+        : getStartOfWeekDate(randomDate(startDate, new Date(maxDate)));
     init(sessionLocationOrder, sessionStartDate);
   }
 })();
@@ -71,24 +72,27 @@ async function init(locationQueue, date) {
 async function checkAvailableSlotsForLocation(
   bookingService,
   locationQueue,
-  date
+  startDate
 ) {
+  let dateToCheck = startDate;
   const { name, id } = locationQueue[0];
 
   logger.debug(`Switching to location: ${name}`);
 
-  while (date.getTime() < maxDate.getTime()) {
+  while (dateToCheck.getTime() <= maxDate.getTime()) {
     await pendingBookingPromise;
-    logger.debug(`Loading ${name} week of ${getShortDate(date)}`);
+    logger.debug(`Loading ${name} week of ${getShortDate(dateToCheck)}`);
     const [freeSlots, bookedSlots] = await bookingService.getFreeSlotsForWeek(
       id,
-      date
+      dateToCheck
     );
 
     if (freeSlots.length && freeSlots.length > 0) {
       if (!pendingBookingPromise) {
         logger.success(
-          `${name} (${getShortDate(date)}) ${freeSlots.length} free time slots`
+          `${name} (${getShortDate(dateToCheck)}) ${
+            freeSlots.length
+          } free time slots`
         );
         pendingBookingPromise = handleBooking(bookingService, freeSlots, id);
         await pendingBookingPromise;
@@ -96,11 +100,11 @@ async function checkAvailableSlotsForLocation(
       }
     } else {
       logger.verbose(
-        `${name} (${getShortDate(date)}) 0 free - ${
+        `${name} (${getShortDate(dateToCheck)}) 0 free - ${
           bookedSlots.length
         } reserved`
       );
-      addDays(date);
+      dateToCheck = addDays(dateToCheck);
     }
 
     tracker.track();
@@ -113,7 +117,11 @@ async function checkAvailableSlotsForLocation(
   logger.debug("Max date reached, checking next location...");
 
   locationQueue.push(locationQueue.shift());
-  checkAvailableSlotsForLocation(bookingService, locationQueue, new Date());
+  checkAvailableSlotsForLocation(
+    bookingService,
+    locationQueue,
+    getStartDateOfCurrentWeek()
+  );
 }
 
 async function handleBooking(bookingService, freeSlots, locationId) {
@@ -156,13 +164,37 @@ function shuffleArray(array) {
 }
 
 function randomDate(start, end) {
-  return new Date(
+  const date = new Date(
     start.getTime() + Math.random() * (end.getTime() - start.getTime())
   );
+  date.setUTCHours(12, 0, 0, 0);
+  return date;
 }
 
-const addDays = (date) => {
+function getMaxDate() {
+  const date = new Date(config.max_date);
+  date.setUTCHours(12, 0, 0, 0);
+  return date;
+}
+
+function getStartDateOfCurrentWeek() {
+  const date = new Date();
+  date.setUTCHours(12, 0, 0, 0);
+  return getStartOfWeekDate(date);
+}
+
+function getStartOfWeekDate(inDate) {
+  const date = new Date(inDate);
+  const day = date.getDay();
+  const diff = date.getDate() - day + (day == 0 ? -6 : 1);
+  date.setDate(diff);
+  return date;
+}
+
+const addDays = (inDate) => {
+  const date = new Date(inDate);
   date.setDate(date.getDate() + 7);
+  return date;
 };
 
 const getShortDate = (date) => {

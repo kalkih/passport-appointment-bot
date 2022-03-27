@@ -46,7 +46,6 @@ const logger = createLogger({
       filename: ".error.log",
       level: "error",
       format: format.combine(format.timestamp(), format.json(), format.splat()),
-      handleExceptions: true,
     }),
   ],
 });
