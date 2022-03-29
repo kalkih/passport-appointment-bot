@@ -60,7 +60,7 @@ module.exports = {
       Östersund: 9,
     },
   },
-  Jönkoping: {
+  Jönköping: {
     id: 59,
     passportServiceId: 64,
     cardServiceId: 63,
