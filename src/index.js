@@ -54,7 +54,7 @@ let pendingBookingPromise = undefined;
       numOfSessions === 1
         ? startDate
         : getStartOfWeekDate(randomDate(startDate, new Date(maxDate)));
-    init(sessionLocationOrder, sessionStartDate);
+    await init(sessionLocationOrder, sessionStartDate);
   }
 })();
 
