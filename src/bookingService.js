@@ -3,6 +3,7 @@ const fetchCookie = require("fetch-cookie");
 const logger = require("./logger");
 const cheerio = require("cheerio");
 const locations = require("./locations");
+const CaptchaService = require("./captchaService");
 
 const TITLE_SELECTOR = ".header h1";
 const VALIDATION_ERROR_SELECTOR = ".validation-summary-errors";
@@ -57,11 +58,13 @@ class BookingService {
       `Started booking session for ${this.numberOfPeople} person(s)`
     );
 
+    const verifiedToken = await CaptchaService.getNewVerifiedToken();
     logger.debug("Accepting booking terms...");
     await this.postRequest({
       AgreementText: "123",
       AcceptInformationStorage: true,
       NumberOfPeople: this.numberOfPeople,
+      "mtcaptcha-verifiedtoken": verifiedToken,
       Next: "Nästa",
     });
     logger.log("success", "Accepted booking terms");
@@ -199,6 +202,8 @@ class BookingService {
   }
 
   async providePersonalDetails(firstname, lastname, passport, idCard) {
+    const verifiedToken = await CaptchaService.getNewVerifiedToken();
+
     logger.verbose(`Providing personal details`);
     const customerData = firstname.map((_, index) => ({
       [`Customers[${index}].BookingCustomerId`]: 0,
@@ -222,7 +227,11 @@ class BookingService {
       [`Customers[${index}].Services[1].ServiceTextName`]: `SERVICE_2_ID-KORT${this.region.toUpperCase()}`,
     }));
     const res = await this.postRequest(
-      Object.assign({}, { Next: "Nästa" }, ...customerData)
+      Object.assign(
+        {},
+        { Next: "Nästa", "mtcaptcha-verifiedtoken": verifiedToken },
+        ...customerData
+      )
     );
     const $ = cheerio.load(await res.text());
     const title = $(TITLE_SELECTOR).text();

@@ -6,6 +6,7 @@ const logger = require("./logger");
 const tracker = require("./tracker");
 const validateConfig = require("./validateConfig");
 const readConfig = require("./readConfig");
+require("./server");
 
 const config = readConfig();
 const BookingService = require("./bookingService");

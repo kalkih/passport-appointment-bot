@@ -20,8 +20,10 @@
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.10",
+    "express": "^4.17.3",
     "fetch-cookie": "^2.0.3",
     "node-fetch": "^2.6.7",
+    "open": "^8.4.0",
     "winston": "^3.6.0",
     "yargs": "^17.4.0"
   },

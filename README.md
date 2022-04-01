@@ -18,8 +18,10 @@ Download `config.json` & `passport-appointment-bot` for your OS from the [latest
 
 1. Edit the configuration file you downloaded (`config.json`) with text editor of choice, see [Configuration](#configuration)
 2. Run the executable you downloaded `passport-appointment-bot`
-3. The bot will automatically exit when an appointment is booked
-4. A booking confirmation should be sent to the configured email and will also be displayed in the program
+3. The bot will open a webpage where the user is required to solve a captcha in order to proceed
+4. The bot will search until an appointment is found
+5. The bot will once again open a webpage where the user is required to solve a captcha in order to proceed
+6. The bot will proceed with the booking and a booking confirmation should be sent to the configured email and will also be displayed in the program
 
 ### Run from source
 
@@ -28,8 +30,10 @@ Requires **Nodejs** _(Tested on v17.7.1)_
 1. Clone the project, install dependencies with `npm install`
 2. Edit configuration values in `config.json`, see [Configuration](#configuration)
 3. Run the bot with `npm start`
-4. The bot will automatically exit when an appointment is booked
-5. A booking confirmation should be sent to the configured email and will also be displayed in the console
+4. The bot will open a webpage where the user is required to solve a captcha in order to proceed
+5. The bot will search until an appointment is found
+6. The bot will once again open a webpage where the user is required to solve a captcha in order to proceed
+7. The bot will proceed with the booking and a booking confirmation should be sent to the configured email and will also be displayed in the console
 
 ### Configuration
 
