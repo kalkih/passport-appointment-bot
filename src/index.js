@@ -44,7 +44,6 @@ let pendingBookingPromise = undefined;
 
   tracker.init();
 
-  logger.log("success", "Starting to check for available timeslots");
   const numOfSessions = Math.min(config.sessions ?? 1, 6);
   const startDate = getStartDateOfCurrentWeek();
   for (let index = 0; index < numOfSessions; index++) {
