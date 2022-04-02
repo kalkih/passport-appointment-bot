@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const CaptchaService = require("./captchaService");
+const CaptchaService = require("./services/captchaService");
 const logger = require("./logger");
 const cors = require("cors");
 

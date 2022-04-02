@@ -1,8 +1,8 @@
 const nodeFetch = require("node-fetch");
 const fetchCookie = require("fetch-cookie");
-const logger = require("./logger");
 const cheerio = require("cheerio");
-const locations = require("./locations");
+const logger = require("../logger");
+const locations = require("../locations");
 const CaptchaService = require("./captchaService");
 
 const TITLE_SELECTOR = ".header h1";

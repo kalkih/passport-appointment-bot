@@ -1,10 +1,10 @@
 const puppeteer = require("puppeteer-core");
-const logger = require("./logger");
 const path = require("path");
 const fs = require("fs");
+const logger = require("../logger");
 
 const captchaHtml = fs.readFileSync(
-  path.join(__dirname, "../public/index.html"),
+  path.join(__dirname, "../../public/index.html"),
   "utf8"
 );
 
