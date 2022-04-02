@@ -14,9 +14,11 @@ It can also be configured to run several concurrent booking sessions in order to
 
 ### How to run
 
+Requires **Google Chrome**
+
 Download `config.json` & `passport-appointment-bot` for your OS from the [latest release](https://github.com/kalkih/passport-appointment-bot/releases/latest), place them in the same folder.
 
-1. Edit the configuration file you downloaded (`config.json`) with text editor of choice, see [Configuration](#configuration)
+1. Edit the configuration file you downloaded (`config.json`) with text editor of choice, see [Configuration](#configuration) for option descriptions
 2. Run the executable you downloaded `passport-appointment-bot`
 3. The bot will open a webpage where the user is required to solve a captcha in order to proceed
 4. The bot will search until an appointment is found
@@ -25,10 +27,11 @@ Download `config.json` & `passport-appointment-bot` for your OS from the [latest
 
 ### Run from source
 
+Requires **Google Chrome**  
 Requires **Nodejs** _(Tested on v17.7.1)_
 
 1. Clone the project, install dependencies with `npm install`
-2. Edit configuration values in `config.json`, see [Configuration](#configuration)
+2. Edit configuration values in `config.json`, see [Configuration](#configuration) for option descriptions
 3. Run the bot with `npm start`
 4. The bot will open a webpage where the user is required to solve a captcha in order to proceed
 5. The bot will search until an appointment is found
