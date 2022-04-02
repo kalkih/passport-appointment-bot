@@ -1,16 +1,13 @@
 const express = require("express");
 const app = express();
-const path = require("path");
 const CaptchaService = require("./captchaService");
 const logger = require("./logger");
+const cors = require("cors");
 
 const PORT = process.env.PORT || 6969;
 
 app.use(express.json());
-
-app.get("/", (_, res) => {
-  res.sendFile(path.join(__dirname, "../public/index.html"));
-});
+app.use(cors());
 
 app.post("/", (req, res) => {
   const token = req.body.token;

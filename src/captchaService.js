@@ -1,13 +1,56 @@
-const open = require("open");
+const puppeteer = require("puppeteer-core");
 const logger = require("./logger");
+const path = require("path");
+const fs = require("fs");
 
-const PORT = process.env.PORT || 6969;
+const captchaHtml = fs.readFileSync(
+  path.join(__dirname, "../public/index.html"),
+  "utf8"
+);
+
+const HEADLESS_HEIGHT = 600;
+const HEADLESS_WIDTH = 600;
 
 class CaptchaService {
   verifiedToken = [];
 
+  async startBrowser() {
+    const chromePaths = getChromePaths();
+
+    for (const chromePath of chromePaths) {
+      logger.debug("Trying to open chrome path: " + chromePath);
+      try {
+        const browser = await puppeteer.launch({
+          product: "chrome",
+          headless: false,
+          executablePath: chromePath,
+          args: [`--window-size=${HEADLESS_WIDTH},${HEADLESS_HEIGHT}`],
+          defaultViewport: {
+            width: HEADLESS_WIDTH,
+            height: HEADLESS_HEIGHT,
+          },
+        });
+        return browser;
+      } catch (error) {
+        if (chromePaths.findIndex((path) => path === chromePath) === -1) {
+          logger.error("Failed starting browser", error);
+        } else {
+          logger.debug("Failed starting browser, trying next chrome path...");
+        }
+      }
+    }
+  }
+
   async openCaptcha() {
-    await open(`http:localhost:${PORT}`);
+    try {
+      const browser = await this.startBrowser();
+      const pages = await browser.pages();
+      const page = pages[0];
+      await page.goto("https://bokapass.nemoq.se");
+      await page.setContent(captchaHtml);
+    } catch (error) {
+      logger.error("Failed opening captcha page", error);
+    }
   }
 
   async getNewVerifiedToken() {
@@ -16,8 +59,9 @@ class CaptchaService {
     }
 
     logger.warn("Manual captcha verification required");
-    logger.verbose("Opening captcha page http://localhost:6969");
+    logger.verbose("Opening captcha page...");
     await this.openCaptcha();
+    logger.debug("Opened captcha page");
 
     logger.info("Waiting for captcha input...");
     const token = await new Promise((resolve) => {
@@ -38,6 +82,22 @@ class CaptchaService {
       "Added new verified token, currently stored: " + this.verifiedToken.length
     );
     this.verifiedToken.push(token);
+  }
+}
+
+function getChromePaths() {
+  if (process.platform === "darwin") {
+    return [
+      "asd",
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    ];
+  } else if (process.platform === "win32") {
+    return [
+      "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+      "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    ];
+  } else if (process.platform === "linux") {
+    return ["/usr/bin/google-chrome"];
   }
 }
 
