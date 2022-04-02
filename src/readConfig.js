@@ -22,8 +22,8 @@ const readConfig = () => {
     }
 
     return config;
-  } catch {
-    logger.error("Missing or invalid configuration file");
+  } catch (error) {
+    logger.error("Missing or invalid configuration file", error);
     process.exit();
   }
 };

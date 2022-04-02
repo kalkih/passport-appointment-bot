@@ -25,10 +25,14 @@
     "fetch-cookie": "^2.0.3",
     "node-fetch": "^2.6.7",
     "puppeteer-core": "^13.5.2",
+    "sound-play": "^1.1.0",
     "winston": "^3.6.0",
     "yargs": "^17.4.0"
   },
   "pkg": {
+    "assets": [
+      "assets/**/*"
+    ],
     "outputPath": "dist",
     "name": "passport-appointment-bot",
     "targets": [

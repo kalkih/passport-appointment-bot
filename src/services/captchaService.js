@@ -2,6 +2,7 @@ const puppeteer = require("puppeteer-core");
 const path = require("path");
 const fs = require("fs");
 const logger = require("../logger");
+const sound = require("sound-play");
 
 const captchaHtml = fs.readFileSync(
   path.join(__dirname, "../../public/index.html"),
@@ -46,6 +47,9 @@ class CaptchaService {
       const browser = await this.startBrowser();
       const pages = await browser.pages();
       const page = pages[0];
+      sound
+        .play(path.join(__dirname, "../../assets/sound.wav"))
+        .catch(() => {});
       await page.goto("https://bokapass.nemoq.se/Booking/Booking/Error");
       await page.setContent(captchaHtml);
     } catch (error) {
