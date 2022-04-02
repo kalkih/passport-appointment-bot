@@ -46,7 +46,7 @@ class CaptchaService {
       const browser = await this.startBrowser();
       const pages = await browser.pages();
       const page = pages[0];
-      await page.goto("https://bokapass.nemoq.se");
+      await page.goto("https://bokapass.nemoq.se/Booking/Booking/Error");
       await page.setContent(captchaHtml);
     } catch (error) {
       logger.error("Failed opening captcha page", error);
