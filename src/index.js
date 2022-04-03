@@ -177,12 +177,6 @@ function getMaxDate() {
   return date;
 }
 
-function getStartDateOfCurrentWeek() {
-  const date = new Date();
-  date.setUTCHours(12, 0, 0, 0);
-  return getStartOfWeekDate(date);
-}
-
 function getStartOfWeekDate(inDate) {
   const date = new Date(inDate);
   const day = date.getDay();

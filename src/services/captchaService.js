@@ -136,10 +136,7 @@ class CaptchaService {
 
 function getChromePaths() {
   if (process.platform === "darwin") {
-    return [
-      "asd",
-      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    ];
+    return ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"];
   } else if (process.platform === "win32") {
     return [
       "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
