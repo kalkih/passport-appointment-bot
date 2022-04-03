@@ -50,7 +50,9 @@ class CaptchaService {
       sound
         .play(path.join(__dirname, "../../assets/sound.wav"))
         .catch(() => {});
-      await page.goto("https://bokapass.nemoq.se/Booking/Booking/Error");
+      await page.goto(
+        "https://bokapass.nemoq.se/Booking/Booking/Index/Stockholm"
+      );
       await page.setContent(captchaHtml);
     } catch (error) {
       logger.error("Failed opening captcha page", error);
