@@ -24,7 +24,6 @@ puppeteer.use(StealthPlugin());
 const path = require("path");
 const fs = require("fs");
 const logger = require("../logger");
-const sound = require("sound-play");
 
 const captchaHtml = fs.readFileSync(
   path.join(__dirname, "../../public/index.html"),
@@ -74,9 +73,6 @@ class CaptchaService {
       this.sessions.push({ sessionId, browser });
       const pages = await browser.pages();
       const page = pages[0];
-      sound
-        .play(path.join(__dirname, "../../assets/sound.wav"))
-        .catch(() => {});
       await page.goto(
         "https://bokapass.nemoq.se/Booking/Booking/Index/Stockholm"
       );

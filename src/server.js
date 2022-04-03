@@ -1,8 +1,9 @@
 const express = require("express");
 const app = express();
+const cors = require("cors");
+const path = require("path");
 const CaptchaService = require("./services/captchaService");
 const logger = require("./logger");
-const cors = require("cors");
 
 const PORT = process.env.PORT || 6969;
 
@@ -14,6 +15,10 @@ app.post("/", (req, res) => {
   CaptchaService.addVerifiedToken(token);
   CaptchaService.sessionCompleted(sessionId);
   res.sendStatus(200);
+});
+
+app.get("/sound.wav", (_, res) => {
+  res.sendFile(path.join(__dirname, "../assets/sound.wav"));
 });
 
 const server = app.listen(PORT, () => {

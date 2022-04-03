@@ -27,7 +27,6 @@
     "puppeteer": "npm:puppeteer-core@^13.5.2",
     "puppeteer-extra": "^3.2.3",
     "puppeteer-extra-plugin-stealth": "^2.9.0",
-    "sound-play": "^1.1.0",
     "winston": "^3.6.0",
     "yargs": "^17.4.0"
   },
