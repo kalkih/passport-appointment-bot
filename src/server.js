@@ -21,9 +21,14 @@ app.get("/sound.wav", (_, res) => {
   res.sendFile(path.join(__dirname, "../assets/sound.wav"));
 });
 
-const server = app.listen(PORT, () => {
-  logger.success(`Started captcha webserver on port ${PORT}`);
-});
+const server = app
+  .listen(PORT, () => {
+    logger.success(`Started captcha webserver on port ${PORT}`);
+  })
+  .on("error", (error) => {
+    logger.error("Failed starting webserver", error);
+    process.exit();
+  });
 
 function handleShutdownGracefully() {
   logger.info("Closing webserver gracefully...");
