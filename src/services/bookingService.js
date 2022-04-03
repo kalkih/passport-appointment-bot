@@ -169,7 +169,7 @@ class BookingService {
         const html = $.html();
         const title = $(TITLE_SELECTOR).text();
         const errors = $(VALIDATION_ERROR_SELECTOR).text();
-        logger.error(`Unexpected page`, { title, errors, html });
+        logger.error(errors, { title, errors, html });
       }
       logger.error(error.stack);
       return undefined;
