@@ -1,4 +1,7 @@
-const puppeteer = require("puppeteer-core");
+const puppeteer = require("puppeteer-extra");
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+puppeteer.use(StealthPlugin());
+
 const path = require("path");
 const fs = require("fs");
 const logger = require("../logger");
