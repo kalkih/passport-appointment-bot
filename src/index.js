@@ -45,7 +45,7 @@ let pendingBookingPromise = undefined;
   tracker.init((config.throttle * 1000) / config.sessions);
 
   const numOfSessions = Math.min(config.sessions ?? 1, 6);
-  const startDate = getStartDateOfCurrentWeek();
+  const startDate = getStartOfWeekDate(config.min_date || new Date());
   for (let index = 0; index < numOfSessions; index++) {
     const sessionLocationOrder =
       numOfSessions === 1 ? validLocations : shuffleArray(validLocations);
@@ -120,7 +120,7 @@ async function checkAvailableSlotsForLocation(
   checkAvailableSlotsForLocation(
     bookingService,
     locationQueue,
-    getStartDateOfCurrentWeek()
+    getStartOfWeekDate(config.min_date || new Date())
   );
 }
 

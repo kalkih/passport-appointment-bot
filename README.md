@@ -42,19 +42,20 @@ Requires **Nodejs** _(Tested on v17.7.1)_
 
 All options are required
 
-| Option    | Description                                                                                                                                                                                                                  |
-| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| region    | Desired region, see [Supported Regions & Locations](#supported-regions--locations)                                                                                                                                           |
-| locations | One or more cities/locations, see [Supported Regions & Locations](#supported-regions--locations)                                                                                                                             |
-| max_date  | Last date to search for appointment (will search all days in the week of the specified date)                                                                                                                                 |
-| email     | Your email (confirmation email will be sent to this address)                                                                                                                                                                 |
-| phone     | Your phone number                                                                                                                                                                                                            |
-| firstname | Your first name, or several firstnames if booking for more than one person e.g. `(["John", "Jane"])`                                                                                                                         |
-| lastname  | Your last name, or several lastnames if booking for more than one person e.g. `(["Doe", "Doe"])`                                                                                                                             |
-| passport  | Set to `true` if the booking appointment is for passport, else `false`.                                                                                                                                                      |
-| id        | Set to `true` if the booking appointment is for national identity card, else `false`.                                                                                                                                        |
-| sessions  | Number of concurrent booking sessions to run, higher number equals faster checking of available times and opens up for checking several locations in parallel, (will still only book one appointment in the end) **(max 6)** |
-| throttle  | Add a timeout (in seconds) between searches                                                                                                                                                                                  |
+| Option    | Required | Description                                                                                                                                                                                                                  |
+| --------- | :------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| region    | &#x2705; | Desired region, see [Supported Regions & Locations](#supported-regions--locations)                                                                                                                                           |
+| locations | &#x2705; | One or more cities/locations, see [Supported Regions & Locations](#supported-regions--locations)                                                                                                                             |
+| max_date  | &#x2705; | Earliest date to search for appointment (will search all days in the week of the specified date)                                                                                                                             |
+| min_date  | &#10060; | Last date to search for appointment (will search all days in the week of the specified date)                                                                                                                                 |
+| email     | &#x2705; | Your email (confirmation email will be sent to this address)                                                                                                                                                                 |
+| phone     | &#x2705; | Your phone number                                                                                                                                                                                                            |
+| firstname | &#x2705; | Your first name, or several firstnames if booking for more than one person e.g. `(["John", "Jane"])`                                                                                                                         |
+| lastname  | &#x2705; | Your last name, or several lastnames if booking for more than one person e.g. `(["Doe", "Doe"])`                                                                                                                             |
+| passport  | &#x2705; | Set to `true` if the booking appointment is for passport, else `false`.                                                                                                                                                      |
+| id        | &#x2705; | Set to `true` if the booking appointment is for national identity card, else `false`.                                                                                                                                        |
+| sessions  | &#x2705; | Number of concurrent booking sessions to run, higher number equals faster checking of available times and opens up for checking several locations in parallel, (will still only book one appointment in the end) **(max 6)** |
+| throttle  | &#x2705; | Add a timeout (in seconds) between searches                                                                                                                                                                                  |
 
 ### Good to know
 
