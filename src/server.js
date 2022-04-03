@@ -15,6 +15,18 @@ app.post("/", (req, res) => {
   res.sendStatus(200);
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   logger.success(`Started captcha webserver on port ${PORT}`);
 });
+
+function handleShutdownGracefully() {
+  logger.info("Closing webserver gracefully...");
+
+  server.close(() => {
+    process.exit(0);
+  });
+}
+
+process.on("SIGINT", handleShutdownGracefully);
+process.on("SIGTERM", handleShutdownGracefully);
+process.on("SIGHUP", handleShutdownGracefully);
