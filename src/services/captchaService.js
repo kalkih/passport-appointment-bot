@@ -82,7 +82,10 @@ class CaptchaService {
         .replaceAll("[PORT_PLACEHOLDER]", server.address().port);
       await page.setContent(captchaHtmlWithSessisonId);
     } catch (error) {
-      logger.error("Failed opening captcha page", error);
+      logger.error(
+        "Failed opening captcha page, make sure you have Google Chrome installed",
+        error
+      );
     }
   }
 
