@@ -36,6 +36,8 @@ const HEADLESS_WIDTH = 600;
 
 class CaptchaService {
   verifiedToken = [];
+  sessions = [];
+  sessionId = 1;
 
   async startBrowser() {
     const chromePaths = getChromePaths();
@@ -66,7 +68,10 @@ class CaptchaService {
 
   async openCaptcha() {
     try {
+      const sessionId = this.sessionId;
+      this.sessionId++;
       const browser = await this.startBrowser();
+      this.sessions.push({ sessionId, browser });
       const pages = await browser.pages();
       const page = pages[0];
       sound
@@ -75,7 +80,11 @@ class CaptchaService {
       await page.goto(
         "https://bokapass.nemoq.se/Booking/Booking/Index/Stockholm"
       );
-      await page.setContent(captchaHtml);
+      const captchaHtmlWithSessisonId = captchaHtml.replace(
+        "SESSION_ID_PLACEHOLDER",
+        sessionId
+      );
+      await page.setContent(captchaHtmlWithSessisonId);
     } catch (error) {
       logger.error("Failed opening captcha page", error);
     }
@@ -110,6 +119,22 @@ class CaptchaService {
       "Added new verified token, currently stored: " + this.verifiedToken.length
     );
     this.verifiedToken.push(token);
+  }
+
+  sessionCompleted(sessionId) {
+    const session = this.sessions.find(
+      (session) => session.sessionId === Number(sessionId)
+    );
+    if (session) {
+      setTimeout(() => {
+        try {
+          session.browser.close();
+        } catch {}
+      }, 1000);
+      this.sessions = this.sessions.filter(
+        (session) => session.sessionId !== sessionId
+      );
+    }
   }
 }
 

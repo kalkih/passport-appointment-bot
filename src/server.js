@@ -10,8 +10,9 @@ app.use(express.json());
 app.use(cors());
 
 app.post("/", (req, res) => {
-  const token = req.body.token;
+  const { token, sessionId } = req.body;
   CaptchaService.addVerifiedToken(token);
+  CaptchaService.sessionCompleted(sessionId);
   res.sendStatus(200);
 });
 

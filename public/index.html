@@ -22,21 +22,23 @@
         color: white;
       }
       h3 {
+        text-align: center;
         color: rgb(26, 241, 7);
       }
     </style>
     <script>
+      var sessionId = "SESSION_ID_PLACEHOLDER";
       function mt_verified(state) {
         fetch("http://localhost:6969", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ token: state.verifiedToken }),
+          body: JSON.stringify({ token: state.verifiedToken, sessionId }),
         }).then((res) => {
           if (res.status === 200) {
             document.querySelector("#status").innerHTML =
-              "Submitted successfully, you can now close this page";
+              "Submitted successfully, page will close automatically...";
           }
         });
       }
