@@ -1,3 +1,5 @@
+const path = require("path");
+const fs = require("fs");
 const puppeteer = require("puppeteer-extra");
 
 require("puppeteer-extra-plugin-stealth/evasions/chrome.app");
@@ -21,9 +23,8 @@ require("puppeteer-extra-plugin-stealth/evasions/window.outerdimensions");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 puppeteer.use(StealthPlugin());
 
-const path = require("path");
-const fs = require("fs");
 const logger = require("../logger");
+const server = require("../server");
 
 const captchaHtml = fs.readFileSync(
   path.join(__dirname, "../../public/index.html"),
@@ -76,10 +77,9 @@ class CaptchaService {
       await page.goto(
         "https://bokapass.nemoq.se/Booking/Booking/Index/Stockholm"
       );
-      const captchaHtmlWithSessisonId = captchaHtml.replace(
-        "SESSION_ID_PLACEHOLDER",
-        sessionId
-      );
+      const captchaHtmlWithSessisonId = captchaHtml
+        .replaceAll("[SESSION_ID_PLACEHOLDER]", sessionId)
+        .replaceAll("[PORT_PLACEHOLDER]", server.address().port);
       await page.setContent(captchaHtmlWithSessisonId);
     } catch (error) {
       logger.error("Failed opening captcha page", error);

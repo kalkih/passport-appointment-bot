@@ -1,11 +1,13 @@
 const express = require("express");
-const app = express();
 const cors = require("cors");
 const path = require("path");
-const CaptchaService = require("./services/captchaService");
 const logger = require("./logger");
+const app = express();
+const server = createServer();
 
-const PORT = process.env.PORT || 6969;
+module.exports = server;
+
+const CaptchaService = require("./services/captchaService");
 
 app.use(express.json());
 app.use(cors());
@@ -21,14 +23,19 @@ app.get("/sound.wav", (_, res) => {
   res.sendFile(path.join(__dirname, "../assets/sound.wav"));
 });
 
-const server = app
-  .listen(PORT, () => {
-    logger.success(`Started captcha webserver on port ${PORT}`);
-  })
-  .on("error", (error) => {
-    logger.error("Failed starting webserver", error);
-    process.exit();
-  });
+function createServer() {
+  const server = app
+    .listen(0, () => {
+      logger.verbose(
+        `Started captcha webserver on port ${server.address().port}`
+      );
+    })
+    .on("error", (error) => {
+      logger.error("Failed starting webserver", error);
+      process.exit();
+    });
+  return server;
+}
 
 function handleShutdownGracefully() {
   logger.info("Closing webserver gracefully...");
