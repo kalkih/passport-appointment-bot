@@ -1,19 +1,18 @@
 const logger = require("./logger");
 
-const INTERVAL = 15;
+const MIN_INTERVAL = 30 * 1000;
 
 const tracker = {
   checks: 0,
   start: undefined,
   lastChecks: undefined,
   slow: false,
-  init() {
+  init(interval) {
     setInterval(() => {
       if (this.checks === 0 || typeof this.start === "undefined") {
         return;
       }
 
-      this.lastChecks = this.checks;
       if (this.lastChecks === this.checks) {
         if (!this.slow) {
           logger.warn("Booking system is running slow...");
@@ -30,7 +29,7 @@ const tracker = {
       logger.info(`CHECKING ${num} WEEKS / SECOND`);
       this.lastChecks = this.checks;
       this.slow = false;
-    }, INTERVAL * 1500);
+    }, Math.max(interval * 15, MIN_INTERVAL));
   },
   track() {
     if (this.checks === 0) {

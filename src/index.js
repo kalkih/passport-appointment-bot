@@ -42,7 +42,7 @@ let pendingBookingPromise = undefined;
     `Valid locations ${validLocations.map(({ name }) => name).join(", ")}`
   );
 
-  tracker.init();
+  tracker.init((config.throttle * 1000) / config.sessions);
 
   const numOfSessions = Math.min(config.sessions ?? 1, 6);
   const startDate = getStartDateOfCurrentWeek();
