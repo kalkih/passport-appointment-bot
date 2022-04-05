@@ -1,0 +1,19 @@
+{
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 2021
+    },
+    "extends": ["plugin:lvksh/recommended"],
+    "ignorePatterns": ["!**/*"],
+    "plugins": ["lvksh"],
+    "env": {
+        "node": true,
+        "jest/globals": true
+    },
+    "rules": {
+        "quotes": ["error", "double"],
+        "unicorn/prefer-module": "off",
+        "unicorn/no-process-exit": "off",
+        "unicorn/prefer-at": "off"
+    }
+}
