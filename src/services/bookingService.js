@@ -1,5 +1,5 @@
 const nodeFetch = require("node-fetch");
-const fetchCookie = require("fetch-cookie");
+const makeFetchCookie = require("fetch-cookie");
 const cheerio = require("cheerio");
 const logger = require("../logger");
 const locations = require("../locations");
@@ -32,15 +32,16 @@ class BookingService {
   constructor(region, numberOfPeople = 1, mock = false) {
     this.region = region;
     this.mock = mock;
-    this.fetch = (url, options) => {
-      options = options || {}
-      options.headers = {
-          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4844.52 Safari/537.36",
-          ...options.headers || {}
-      }
-  
-      return fetchCookie(nodeFetch)(url, options)
-    };
+    this.fetchInstance = makeFetchCookie(nodeFetch);
+    this.fetch = (url, options = {}) =>
+      this.fetchInstance(url, {
+        ...options,
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4844.52 Safari/537.36",
+          ...(options.headers || {}),
+        },
+      });
 
     this.numberOfPeople = numberOfPeople;
   }
