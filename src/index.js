@@ -45,7 +45,9 @@ let pendingBookingPromise = undefined;
   tracker.init((config.throttle * 1000) / config.sessions);
 
   const numOfSessions = Math.min(config.sessions ?? 1, 6);
-  const startDate = getStartOfWeekDate(config.min_date || new Date());
+  const startDate = config.min_date
+    ? getStartOfWeekDate(config.min_date)
+    : getToday();
   for (let index = 0; index < numOfSessions; index++) {
     const sessionLocationOrder =
       numOfSessions === 1 ? validLocations : shuffleArray(validLocations);
@@ -104,7 +106,7 @@ async function checkAvailableSlotsForLocation(
           bookedSlots.length
         } reserved`
       );
-      dateToCheck = addDays(dateToCheck);
+      dateToCheck = getStartOfWeekDate(addDays(dateToCheck));
     }
 
     tracker.track();
@@ -117,11 +119,10 @@ async function checkAvailableSlotsForLocation(
   logger.debug("Max date reached, checking next location...");
 
   locationQueue.push(locationQueue.shift());
-  checkAvailableSlotsForLocation(
-    bookingService,
-    locationQueue,
-    getStartOfWeekDate(config.min_date || new Date())
-  );
+  const nextStartDate = config.min_date
+    ? getStartOfWeekDate(config.min_date)
+    : getToday();
+  checkAvailableSlotsForLocation(bookingService, locationQueue, nextStartDate);
 }
 
 async function handleBooking(bookingService, freeSlots, locationId) {
@@ -167,6 +168,12 @@ function randomDate(start, end) {
   const date = new Date(
     start.getTime() + Math.random() * (end.getTime() - start.getTime())
   );
+  date.setUTCHours(12, 0, 0, 0);
+  return date;
+}
+
+function getToday() {
+  const date = new Date();
   date.setUTCHours(12, 0, 0, 0);
   return date;
 }
