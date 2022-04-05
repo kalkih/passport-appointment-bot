@@ -38,7 +38,7 @@ class BookingService {
         ...options,
         headers: {
           "User-Agent":
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4844.52 Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.60 Safari/537.36",
           ...(options.headers || {}),
         },
       });
@@ -97,7 +97,7 @@ class BookingService {
     logger.log("success", "Residency set");
   }
 
-  async postRequest(body) {
+  async postRequest(body, retry = 0) {
     try {
       const response = await this.fetch(this.postUrl, {
         method: "POST",
@@ -113,8 +113,12 @@ class BookingService {
 
       throw new Error("Something went wrong.");
     } catch (error) {
-      logger.error(error.message);
-      this.postRequest(body);
+      logger.error(error.message, error.stack);
+      if (retry > 6) {
+        logger.error("Too many retries, exiting", error.stack);
+        process.exit();
+      }
+      this.postRequest(body, retry + 1);
     }
   }
 
