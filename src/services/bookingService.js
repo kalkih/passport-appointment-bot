@@ -168,6 +168,7 @@ class BookingService {
     try {
       await this.selectSlot(serviceTypeId, timeslot, location);
       await this.providePersonalDetails(
+        config.personnummer,
         config.firstname,
         config.lastname,
         config.passport,
@@ -219,22 +220,33 @@ class BookingService {
     }
   }
 
-  async providePersonalDetails(firstname, lastname, passport, idCard) {
+  async providePersonalDetails(
+    personnummer,
+    firstname,
+    lastname,
+    passport,
+    idCard
+  ) {
     const verifiedToken = await CaptchaService.getNewVerifiedToken();
 
     logger.verbose(`Providing personal details`);
     const customerData = firstname.map((_, index) => ({
       [`Customers[${index}].BookingCustomerId`]: 0,
-      [`Customers[${index}].BookingFieldValues[0].Value`]: firstname[index],
-      [`Customers[${index}].BookingFieldValues[0].BookingFieldId`]: 5,
+      [`Customers[${index}].BookingFieldValues[0].Value`]: personnummer[index],
+      [`Customers[${index}].BookingFieldValues[0].BookingFieldId`]: 1,
       [`Customers[${index}].BookingFieldValues[0].BookingFieldTextName`]:
-        "BF_2_FÖRNAMN",
+        "BF_2_PERSONNUMMER",
       [`Customers[${index}].BookingFieldValues[0].FieldTypeId`]: 1,
-      [`Customers[${index}].BookingFieldValues[1].Value`]: lastname[index],
-      [`Customers[${index}].BookingFieldValues[1].BookingFieldId`]: 6,
+      [`Customers[${index}].BookingFieldValues[1].Value`]: firstname[index],
+      [`Customers[${index}].BookingFieldValues[1].BookingFieldId`]: 5,
       [`Customers[${index}].BookingFieldValues[1].BookingFieldTextName`]:
-        "BF_2_EFTERNAMN",
+        "BF_2_FÖRNAMN",
       [`Customers[${index}].BookingFieldValues[1].FieldTypeId`]: 1,
+      [`Customers[${index}].BookingFieldValues[2].Value`]: lastname[index],
+      [`Customers[${index}].BookingFieldValues[2].BookingFieldId`]: 6,
+      [`Customers[${index}].BookingFieldValues[2].BookingFieldTextName`]:
+        "BF_2_EFTERNAMN",
+      [`Customers[${index}].BookingFieldValues[2].FieldTypeId`]: 1,
       [`Customers[${index}].Services[0].IsSelected`]: passport,
       [`Customers[${index}].Services[0].ServiceId`]:
         locations[this.region].passportServiceId,

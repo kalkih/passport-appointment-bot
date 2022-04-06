@@ -4,6 +4,7 @@
   "max_date": "2022-08-01",
   "email": "example@mail.com",
   "phone": "0701234567",
+  "personnummer": ["19940101-3314"],
   "firstname": ["John"],
   "lastname": ["Doe"],
   "passport": true,

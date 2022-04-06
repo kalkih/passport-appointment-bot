@@ -7,6 +7,7 @@ const requiredProperties = [
   "max_date",
   "email",
   "phone",
+  "personnummer",
   "firstname",
   "lastname",
   "passport",
@@ -26,9 +27,13 @@ const validateConfig = (config) => {
     }
   });
 
-  if (config.firstname.length !== config.lastname.length) {
+  if (
+    ![config.firstname, config.lastname].every(
+      (arr) => arr.length === config.personnummer.length
+    )
+  ) {
     logger.error(
-      "Same number of 'firstnames' & 'lastnames' has to be provided"
+      "Same number of 'personnummer', 'firstnames' & 'lastnames' has to be provided"
     );
     process.exit();
   }

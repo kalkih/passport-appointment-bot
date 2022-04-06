@@ -2,7 +2,7 @@
 
 > Bot to automatically find and book an appointment for renewal/creation of a Swedish passport or national identity card.
 
-> _Bott som automatiskt söker och bokar första lediga tid för att förnya pass eller nationellt id kort._
+> _Bott som automatiskt söker och bokar första lediga tid för att förnya pass och/eller nationellt id kort._
 
 ## ⚠️ **For educational use only** ⚠️
 
@@ -48,10 +48,11 @@ All options are required
 | locations    | &#x2705; | One or more cities/locations, see [Supported Regions & Locations](#supported-regions--locations)                                                                                                                             |
 | max_date     | &#x2705; | Latest date to search for appointment (will search all days in the week of the specified date)                                                                                                                               |
 | min_date     | &#10060; | Earliest date to search for appointment (will search all days in the week of the specified date)                                                                                                                             |
-| email        | &#x2705; | Your email (confirmation email will be sent to this address)                                                                                                                                                                 |
-| phone        | &#x2705; | Your phone number                                                                                                                                                                                                            |
-| firstname    | &#x2705; | Your first name, or several firstnames if booking for more than one person e.g. `(["John", "Jane"])`                                                                                                                         |
-| lastname     | &#x2705; | Your last name, or several lastnames if booking for more than one person e.g. `(["Doe", "Doe"])`                                                                                                                             |
+| email        | &#x2705; | Email (confirmation will be sent to this address)                                                                                                                                                                            |
+| phone        | &#x2705; | Phone number (confirmation will be sent to this number)                                                                                                                                                                      |
+| personnummer | &#x2705; | Personnummer / Social security number(s), one or multiple when booking for more than one person e.g. `["19940101-8453", "19960101-6406"]`                                                                                    |
+| firstname    | &#x2705; | First name(s), one or multiple when booking for more than one person e.g. `["John", "Jane"]`                                                                                                                                 |
+| lastname     | &#x2705; | Last name(s), one or multiple when booking for more than one person e.g. `["Doe", "Doe"]`                                                                                                                                    |
 | passport     | &#x2705; | Set to `true` if the booking appointment is for passport, else `false`                                                                                                                                                       |
 | id           | &#x2705; | Set to `true` if the booking appointment is for national identity card, else `false`                                                                                                                                         |
 | confirmation | &#x2705; | Method for receiving booking confirmation `email` and/or `sms`                                                                                                                                                               |

@@ -13,6 +13,10 @@ const readConfig = () => {
 
     const config = JSON.parse(fs.readFileSync(configPath));
 
+    if (typeof config.personnummer === "string") {
+      config.personnummer = [config.personnummer];
+    }
+
     if (typeof config.firstname === "string") {
       config.firstname = [config.firstname];
     }
