@@ -1,4 +1,5 @@
 const logger = require("./logger");
+const LOCATIONS = require("./locations");
 
 const requiredProperties = [
   "region",
@@ -15,6 +16,9 @@ const requiredProperties = [
 
 const validateConfig = (config) => {
   logger.info("Validating configuration...");
+
+  const region = validateRegion(config.region);
+  const locations = validateLocations(region.locations, config.locations);
   requiredProperties.forEach((prop) => {
     if (!(prop in config)) {
       logger.error(`Missing required configuration for ${prop}.`);
@@ -45,7 +49,40 @@ const validateConfig = (config) => {
     process.exit();
   }
 
-  logger.log("success", "Configuration is valid");
+  logger.success("Configuration is valid");
+  return locations;
 };
+
+function validateRegion(region) {
+  logger.debug("Validating configured region...");
+  if (!LOCATIONS[region]) {
+    logger.error(`Region not supported: ${region}, exiting...`);
+    process.exit();
+  }
+  logger.success(`Valid region: ${region}`);
+  return LOCATIONS[region];
+}
+
+function validateLocations(validLocations, locations) {
+  logger.debug("Validating configured locations...");
+  const confirmedLocations = [];
+  for (const location of locations) {
+    if (validLocations[location]) {
+      confirmedLocations.push({ name: location, id: validLocations[location] });
+    } else {
+      logger.warn(`Location not found: ${location}, skipping...`);
+    }
+  }
+
+  if (confirmedLocations.length === 0) {
+    logger.error("No valid locations, exiting...");
+    process.exit();
+  }
+
+  logger.success(
+    `Valid locations: ${confirmedLocations.map(({ name }) => name).join(", ")}`
+  );
+  return confirmedLocations;
+}
 
 module.exports = validateConfig;

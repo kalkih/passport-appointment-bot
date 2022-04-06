@@ -65,10 +65,6 @@ class BookingService {
       ServiceGroupId: locations[this.region].id,
       StartNextButton: "Boka ny tid",
     });
-    logger.log(
-      "success",
-      `Started booking session for ${this.numberOfPeople} person(s)`
-    );
 
     const verifiedToken = await CaptchaService.getNewVerifiedToken();
     logger.debug("Accepting booking terms...");
@@ -96,7 +92,9 @@ class BookingService {
           { Next: "Nästa" }
         )
     );
-    logger.log("success", "Residency set");
+    logger.success(
+      `Started booking session for ${this.numberOfPeople} person(s)`
+    );
   }
 
   async postRequest(body, retry = 0) {

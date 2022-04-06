@@ -1,7 +1,6 @@
 const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
 const argv = yargs(hideBin(process.argv)).argv;
-const locations = require("./locations");
 const logger = require("./logger");
 const tracker = require("./tracker");
 const validateConfig = require("./validateConfig");
@@ -14,33 +13,7 @@ const maxDate = getMaxDate();
 let pendingBookingPromise = undefined;
 
 (async () => {
-  validateConfig(config);
-
-  logger.info("Validating configured region...");
-  const region = locations[config.region];
-  if (!region) {
-    logger.error(`Region not supported: ${config.region}, exiting...`);
-    process.exit();
-  }
-  logger.log("success", `Valid region ${config.region}`);
-
-  logger.info("Validating configured locations...");
-  const validLocations = [];
-  for (const location of config.locations) {
-    if (region.locations[location]) {
-      validLocations.push({ name: location, id: region.locations[location] });
-    } else {
-      logger.warn(`Location not found: ${location}, skipping...`);
-    }
-  }
-
-  if (validLocations.length === 0) {
-    logger.error("No valid locations, exiting...");
-    process.exit();
-  }
-  logger.success(
-    `Valid locations ${validLocations.map(({ name }) => name).join(", ")}`
-  );
+  const locations = validateConfig(config);
 
   tracker.init((config.throttle * 1000) / config.sessions);
 
@@ -50,7 +23,7 @@ let pendingBookingPromise = undefined;
     : getToday();
   for (let index = 0; index < numOfSessions; index++) {
     const sessionLocationOrder =
-      numOfSessions === 1 ? validLocations : shuffleArray(validLocations);
+      numOfSessions === 1 ? locations : shuffleArray(locations);
     const sessionStartDate =
       numOfSessions === 1
         ? startDate
@@ -59,7 +32,7 @@ let pendingBookingPromise = undefined;
   }
 })();
 
-async function init(locationQueue, date) {
+async function init(locations, date) {
   const numOfPeople = config.firstname.length;
   const bookingService = new BookingService(
     config.region,
@@ -68,7 +41,7 @@ async function init(locationQueue, date) {
   );
   await bookingService.init();
 
-  checkAvailableSlotsForLocation(bookingService, [...locationQueue], date);
+  checkAvailableSlotsForLocation(bookingService, [...locations], date);
 }
 
 async function checkAvailableSlotsForLocation(
