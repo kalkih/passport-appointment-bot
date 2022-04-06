@@ -21,6 +21,10 @@ const readConfig = () => {
       config.lastname = [config.lastname];
     }
 
+    if (typeof config.confirmation === "string") {
+      config.confirmation = [config.confirmation];
+    }
+
     return config;
   } catch (error) {
     logger.error("Missing or invalid configuration file", error);

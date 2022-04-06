@@ -8,6 +8,7 @@
   "lastname": ["Doe"],
   "passport": true,
   "id": false,
+  "confirmation": ["email", "sms"],
   "sessions": 1,
   "throttle": 0
 }

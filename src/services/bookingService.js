@@ -176,7 +176,11 @@ class BookingService {
         config.id
       );
       await this.confirmSlot();
-      await this.provideContactDetails(config.email, config.phone);
+      await this.provideContactDetails(
+        config.email,
+        config.phone,
+        config.confirmation
+      );
       return await this.finalizeBooking();
     } catch (error) {
       logger.error("Something went wrong when trying to book timeslot");
@@ -274,26 +278,29 @@ class BookingService {
     }
   }
 
-  async provideContactDetails(email, phone) {
+  async provideContactDetails(email, phone, confirmation) {
+    const emailConfirmation = confirmation.includes("email");
+    const smsConfirmation = confirmation.includes("sms");
+
     logger.verbose(`Providing contact details`);
     const res = await this.postRequest({
       EmailAddress: email,
       ConfirmEmailAddress: email,
       PhoneNumber: phone,
       ConfirmPhoneNumber: phone,
-      "SelectedContacts[0].IsSelected": true,
+      "SelectedContacts[0].IsSelected": emailConfirmation,
       "SelectedContacts[0].MessageTypeId": 2,
       "SelectedContacts[0].MessageKindId": 1,
       "SelectedContacts[0].TextName": "MESSAGETYPE_EMAIL",
-      "SelectedContacts[1].IsSelected": false,
+      "SelectedContacts[1].IsSelected": smsConfirmation,
       "SelectedContacts[1].MessageTypeId": 1,
       "SelectedContacts[1].MessageKindId": 1,
       "SelectedContacts[1].TextName": "MESSAGETYPE_SMS",
-      "SelectedContacts[2].IsSelected": true,
+      "SelectedContacts[2].IsSelected": emailConfirmation,
       "SelectedContacts[2].MessageTypeId": 2,
       "SelectedContacts[2].MessageKindId": 2,
       "SelectedContacts[2].TextName": "MESSAGETYPE_EMAIL",
-      "SelectedContacts[3].IsSelected": false,
+      "SelectedContacts[3].IsSelected": smsConfirmation,
       "SelectedContacts[3].MessageTypeId": 1,
       "SelectedContacts[3].MessageKindId": 2,
       "SelectedContacts[3].TextName": "MESSAGETYPE_SMS",
