@@ -1,5 +1,41 @@
-module.exports = {
-  Blekinge: {
+export interface RegionConfig {
+  id: number;
+  passportServiceId: number;
+  cardServiceId: number;
+  locations: Locations;
+}
+
+export type Locations = Record<string, number>;
+
+export enum Region {
+  BLEKINGE = "Blekinge",
+  DALARNA = "Dalarna",
+  GOTLAND = "Gotland",
+  GAVLEBORG = "Gävleborg",
+  HALLAND = "Halland",
+  JAMTLAND = "Jämtland",
+  JONKOPING = "Jönköping",
+  KALMAR = "Kalmar",
+  KRONOBERG = "Kronoberg",
+  NORRBOTTEN = "Norrbotten",
+  SKANE = "Skåne",
+  STOCKHOLM = "Stockholm",
+  SODERMANLAND = "Södermanland",
+  UPPSALA = "Uppsala",
+  VARMLAND = "Värmland",
+  VASTERBOTTEN = "Västerbotten",
+  VASTERNORRLAND = "Västernorrland",
+  VASTMANLAND = "Västmanland",
+  VASTRA_GOTALAND = "VästraGötaland",
+  OREBRO = "Örebro",
+  OSTERGOTLAND = "Östergötland",
+}
+
+export const isValidRegion = (region: string): region is Region =>
+  Object.values(Region).includes(region as Region);
+
+export const LOCATIONS: Record<Region, RegionConfig> = {
+  [Region.BLEKINGE]: {
     id: 74,
     passportServiceId: 76,
     cardServiceId: 75,
@@ -8,7 +44,7 @@ module.exports = {
       Karlskrona: 105,
     },
   },
-  Dalarna: {
+  [Region.DALARNA]: {
     id: 15,
     passportServiceId: 27,
     cardServiceId: 26,
@@ -19,7 +55,7 @@ module.exports = {
       Mora: 56,
     },
   },
-  Gotland: {
+  [Region.GOTLAND]: {
     id: 21,
     passportServiceId: 27,
     cardServiceId: 26,
@@ -27,7 +63,7 @@ module.exports = {
       Visby: 12,
     },
   },
-  Gävleborg: {
+  [Region.GAVLEBORG]: {
     id: 19,
     passportServiceId: 29,
     cardServiceId: 28,
@@ -37,7 +73,7 @@ module.exports = {
       Hudiksvall: 32,
     },
   },
-  Halland: {
+  [Region.HALLAND]: {
     id: 65,
     passportServiceId: 67,
     cardServiceId: 66,
@@ -48,7 +84,7 @@ module.exports = {
       Varberg: 95,
     },
   },
-  Jämtland: {
+  [Region.JAMTLAND]: {
     id: 18,
     passportServiceId: 31,
     cardServiceId: 30,
@@ -60,7 +96,7 @@ module.exports = {
       Östersund: 9,
     },
   },
-  Jönköping: {
+  [Region.JONKOPING]: {
     id: 59,
     passportServiceId: 64,
     cardServiceId: 63,
@@ -70,7 +106,7 @@ module.exports = {
       Värnamo: 84,
     },
   },
-  Kalmar: {
+  [Region.KALMAR]: {
     id: 69,
     passportServiceId: 72,
     cardServiceId: 73,
@@ -80,7 +116,7 @@ module.exports = {
       Västervik: 104,
     },
   },
-  Kronoberg: {
+  [Region.KRONOBERG]: {
     id: 68,
     passportServiceId: 71,
     cardServiceId: 70,
@@ -90,7 +126,7 @@ module.exports = {
       Älmhult: 100,
     },
   },
-  Norrbotten: {
+  [Region.NORRBOTTEN]: {
     id: 53,
     passportServiceId: 54,
     cardServiceId: 55,
@@ -105,7 +141,7 @@ module.exports = {
       Piteå: 70,
     },
   },
-  Skåne: {
+  [Region.SKANE]: {
     id: 77,
     passportServiceId: 79,
     cardServiceId: 78,
@@ -123,7 +159,7 @@ module.exports = {
       Ängelholm: 115,
     },
   },
-  Stockholm: {
+  [Region.STOCKHOLM]: {
     id: 47,
     passportServiceId: 52,
     cardServiceId: 48,
@@ -141,7 +177,7 @@ module.exports = {
       "Södra Roslagen": 48,
     },
   },
-  Södermanland: {
+  [Region.SODERMANLAND]: {
     id: 60,
     passportServiceId: 62,
     cardServiceId: 61,
@@ -153,7 +189,7 @@ module.exports = {
       Strängnäs: 89,
     },
   },
-  Uppsala: {
+  [Region.UPPSALA]: {
     id: 20,
     passportServiceId: 25,
     cardServiceId: 24,
@@ -164,7 +200,7 @@ module.exports = {
       Östhammar: 33,
     },
   },
-  Värmland: {
+  [Region.VARMLAND]: {
     id: 16,
     passportServiceId: 23,
     cardServiceId: 22,
@@ -175,7 +211,7 @@ module.exports = {
       Torsby: 57,
     },
   },
-  Västerbotten: {
+  [Region.VASTERBOTTEN]: {
     id: 13,
     passportServiceId: 35,
     cardServiceId: 34,
@@ -187,7 +223,7 @@ module.exports = {
       Vilhelmina: 75,
     },
   },
-  Västernorrland: {
+  [Region.VASTERNORRLAND]: {
     id: 14,
     passportServiceId: 37,
     cardServiceId: 36,
@@ -200,7 +236,7 @@ module.exports = {
       Örnsköldsvik: 78,
     },
   },
-  Västmanland: {
+  [Region.VASTMANLAND]: {
     id: 1,
     passportServiceId: 3,
     cardServiceId: 2,
@@ -211,7 +247,7 @@ module.exports = {
       Västerås: 93,
     },
   },
-  VästraGötaland: {
+  [Region.VASTRA_GOTALAND]: {
     id: 40,
     passportServiceId: 42,
     cardServiceId: 41,
@@ -233,7 +269,7 @@ module.exports = {
       Åmål: 23,
     },
   },
-  Örebro: {
+  [Region.OREBRO]: {
     id: 17,
     passportServiceId: 39,
     cardServiceId: 38,
@@ -245,7 +281,7 @@ module.exports = {
       Örebro: 8,
     },
   },
-  Östergötland: {
+  [Region.OSTERGOTLAND]: {
     id: 56,
     passportServiceId: 58,
     cardServiceId: 57,

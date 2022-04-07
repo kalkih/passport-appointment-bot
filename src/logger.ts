@@ -1,9 +1,10 @@
-const { transports, createLogger, format } = require("winston");
-const path = require("path");
+import winston, { transports, createLogger, format } from "winston";
+import path from "path";
 
-const getConfigPath = () => {
-  if (process.pkg) {
-    return (configPath = path.dirname(process.execPath));
+const getConfigPath = (): string => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((process as any).pkg) {
+    return path.dirname(process.execPath);
   }
   return process.cwd();
 };
@@ -26,12 +27,15 @@ const colors = {
   debug: "magenta",
 };
 
-const logger = createLogger({
+interface Logger extends winston.Logger {
+  success: (message: string) => void;
+}
+
+export const logger = createLogger({
   levels,
   transports: [
     new transports.Console({
       level: "verbose",
-      colorize: true,
       format: format.combine(
         format.errors({ stack: true }),
         format.colorize({ all: true, colors }),
@@ -48,6 +52,4 @@ const logger = createLogger({
       format: format.combine(format.timestamp(), format.json(), format.splat()),
     }),
   ],
-});
-
-module.exports = logger;
+}) as Logger;

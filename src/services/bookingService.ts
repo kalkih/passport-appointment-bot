@@ -1,51 +1,61 @@
-const nodeFetch = require("node-fetch");
-const makeFetchCookie = require("fetch-cookie");
-const cheerio = require("cheerio");
-const logger = require("../logger");
-const locations = require("../locations");
-const CaptchaService = require("./captchaService");
+import nodeFetch, { RequestInit, Response } from "node-fetch";
+import makeFetchCookie from "fetch-cookie";
+import cheerio, { Cheerio, CheerioAPI, Element } from "cheerio";
+import { logger } from "../logger";
+import { LOCATIONS, Region } from "../locations";
+import { captchaService } from "./captchaService";
+import { Config, ConfirmationType } from "../configuration";
 
 const TITLE_SELECTOR = ".header h1";
 const VALIDATION_ERROR_SELECTOR = ".validation-summary-errors";
 const EXISTING_BOOKING_ERROR_TEXT =
   "Det går endast att göra en bokning per e-postadress/telefonnummer";
 
-const generateBaseUrl = (region) =>
+const generateBaseUrl = (region: Region) =>
   `https://bokapass.nemoq.se/Booking/Booking/Index/${replaceSpecialChars(
     region.toLowerCase()
   )}`;
-const generatePostUrl = (region) =>
+const generatePostUrl = (region: Region) =>
   `https://bokapass.nemoq.se/Booking/Booking/Next/${replaceSpecialChars(
     region.toLowerCase()
   )}`;
-const generatePreviousUrl = (region) =>
+const generatePreviousUrl = (region: Region) =>
   `https://bokapass.nemoq.se/Booking/Booking/Previous/${replaceSpecialChars(
     region.toLowerCase()
   )}`;
 
-class BookingService {
-  region = undefined;
-  mock = false;
-  fetchInstance = undefined;
-  fetch = undefined;
-  numberOfPeople = undefined;
+class BookingPageError extends Error {
+  page: CheerioAPI;
 
-  constructor(region, numberOfPeople = 1, mock = false) {
+  constructor({ message, page }: { message?: string; page: CheerioAPI }) {
+    super(message);
+    this.page = page;
+  }
+}
+
+export class BookingService {
+  region: Region;
+  mock: boolean;
+  numberOfPeople: number;
+  fetchInstance = makeFetchCookie(nodeFetch);
+
+  constructor(region: Region, numberOfPeople = 1, mock = false) {
     this.region = region;
     this.mock = mock;
-    this.fetchInstance = makeFetchCookie(nodeFetch);
-    this.fetch = (url = generateBaseUrl(this.region), options = {}) =>
-      this.fetchInstance(url, {
-        ...options,
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.60 Safari/537.36",
-          Referer: generateBaseUrl(this.region),
-          ...(options.headers || {}),
-        },
-      });
-
     this.numberOfPeople = numberOfPeople;
+    // this.fetchInstance = makeFetchCookie(nodeFetch);
+  }
+
+  async fetch(url = generateBaseUrl(this.region), options: RequestInit = {}) {
+    return this.fetchInstance(url, {
+      ...options,
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.60 Safari/537.36",
+        Referer: generateBaseUrl(this.region),
+        ...(options.headers || {}),
+      },
+    });
   }
 
   async init() {
@@ -54,11 +64,11 @@ class BookingService {
 
     await this.postRequest({
       FormId: 1,
-      ServiceGroupId: locations[this.region].id,
+      ServiceGroupId: LOCATIONS[this.region].id,
       StartNextButton: "Boka ny tid",
     });
 
-    const verifiedToken = await CaptchaService.getNewVerifiedToken();
+    const verifiedToken = await captchaService.getNewVerifiedToken();
     logger.debug("Accepting booking terms...");
     await this.postRequest({
       AgreementText: "123",
@@ -89,7 +99,8 @@ class BookingService {
     );
   }
 
-  async postRequest(body, retry = 0) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async postRequest(body: Record<string, any>, retry = 0): Promise<Response> {
     try {
       const response = await this.fetch(generatePostUrl(this.region), {
         method: "POST",
@@ -99,22 +110,28 @@ class BookingService {
         body: new URLSearchParams(body),
       });
 
-      if (response.ok) {
-        return response;
+      if (!response.ok) {
+        throw new Error("Something went wrong");
       }
 
-      throw new Error("Something went wrong");
+      return response;
     } catch (error) {
-      logger.error(error.message, error.stack);
-      if (retry > 6) {
-        logger.error("Too many retries, exiting", error.stack);
-        process.exit();
+      if (error instanceof Error) {
+        logger.error(error.message, error.stack);
+        if (retry > 6) {
+          logger.error("Too many retries, exiting", error.stack);
+          process.exit();
+        }
+        this.postRequest(body, retry + 1);
       }
-      this.postRequest(body, retry + 1);
+      throw new Error();
     }
   }
 
-  async getFreeSlotsForWeek(locationId, date) {
+  async getFreeSlotsForWeek(
+    locationId: number,
+    date: Date
+  ): Promise<[Cheerio<Element> | undefined, Cheerio<Element> | undefined]> {
     try {
       const res = await this.postRequest({
         FormId: 1,
@@ -133,13 +150,15 @@ class BookingService {
 
       return [freeSlots, bookedSlots];
     } catch (error) {
-      logger.error(error.message);
+      if (error instanceof Error) {
+        logger.error(error.message);
+      }
       logger.verbose(`Failed checking week of: ${getShortDate(date)}`);
     }
-    return [[], []];
+    return [undefined, undefined];
   }
 
-  async recover() {
+  async recover(): Promise<boolean> {
     let recovered = false;
     for (let index = 0; index < 6; index++) {
       logger.warn(`Trying to recover booking session... ${index + 1}`);
@@ -156,38 +175,35 @@ class BookingService {
     return recovered;
   }
 
-  async bookSlot(serviceTypeId, timeslot, location, config) {
+  async bookSlot(
+    serviceTypeId: string,
+    timeslot: string,
+    location: number,
+    config: Config
+  ) {
     try {
       await this.selectSlot(serviceTypeId, timeslot, location);
-      await this.providePersonalDetails(
-        config.personnummer,
-        config.firstname,
-        config.lastname,
-        config.passport,
-        config.id
-      );
+      await this.providePersonalDetails(config);
       await this.confirmSlot();
-      await this.provideContactDetails(
-        config.email,
-        config.phone,
-        config.confirmation
-      );
+      await this.provideContactDetails(config);
       return await this.finalizeBooking();
     } catch (error) {
       logger.error("Something went wrong when trying to book timeslot");
-      if (error.page) {
+      if (error instanceof BookingPageError) {
         const $ = error.page;
         const html = $.html();
         const title = $(TITLE_SELECTOR).text();
         const errors = $(VALIDATION_ERROR_SELECTOR).text();
         logger.error(errors, { title, errors, html });
+        logger.error(error.stack);
+      } else if (error instanceof Error) {
+        logger.error(error.stack);
       }
-      logger.error(error.stack);
       return undefined;
     }
   }
 
-  async selectSlot(serviceTypeId, timeslot, location) {
+  async selectSlot(serviceTypeId: string, timeslot: string, location: number) {
     logger.verbose(`Selecting timeslot (${timeslot})`);
     const res = await this.postRequest({
       FormId: 2,
@@ -206,20 +222,18 @@ class BookingService {
     const title = $(TITLE_SELECTOR).text();
 
     if (title !== "Uppgifter till bokningen") {
-      const error = new Error();
-      error.page = $;
-      throw error;
+      throw new BookingPageError({ page: $ });
     }
   }
 
-  async providePersonalDetails(
+  async providePersonalDetails({
     personnummer,
     firstname,
     lastname,
     passport,
-    idCard
-  ) {
-    const verifiedToken = await CaptchaService.getNewVerifiedToken();
+    id,
+  }: Config) {
+    const verifiedToken = await captchaService.getNewVerifiedToken();
 
     logger.verbose(`Providing personal details`);
     const customerData = firstname.map((_, index) => ({
@@ -241,11 +255,11 @@ class BookingService {
       [`Customers[${index}].BookingFieldValues[2].FieldTypeId`]: 1,
       [`Customers[${index}].Services[0].IsSelected`]: passport,
       [`Customers[${index}].Services[0].ServiceId`]:
-        locations[this.region].passportServiceId,
+        LOCATIONS[this.region].passportServiceId,
       [`Customers[${index}].Services[0].ServiceTextName`]: `SERVICE_2_PASSANSÖKAN${this.region.toUpperCase()}`,
-      [`Customers[${index}].Services[1].IsSelected`]: idCard,
+      [`Customers[${index}].Services[1].IsSelected`]: id,
       [`Customers[${index}].Services[1].ServiceId`]:
-        locations[this.region].cardServiceId,
+        LOCATIONS[this.region].cardServiceId,
       [`Customers[${index}].Services[1].ServiceTextName`]: `SERVICE_2_ID-KORT${this.region.toUpperCase()}`,
     }));
     const res = await this.postRequest(
@@ -259,9 +273,7 @@ class BookingService {
     const title = $(TITLE_SELECTOR).text();
 
     if (title !== "Viktig information") {
-      const error = new Error();
-      error.page = $;
-      throw error;
+      throw new BookingPageError({ page: $ });
     }
   }
 
@@ -274,15 +286,13 @@ class BookingService {
     const title = $(TITLE_SELECTOR).text();
 
     if (title !== "Kontaktuppgifter") {
-      const error = new Error();
-      error.page = $;
-      throw error;
+      throw new BookingPageError({ page: $ });
     }
   }
 
-  async provideContactDetails(email, phone, confirmation) {
-    const emailConfirmation = confirmation.includes("email");
-    const smsConfirmation = confirmation.includes("sms");
+  async provideContactDetails({ email, phone, confirmation }: Config) {
+    const emailConfirmation = confirmation.includes(ConfirmationType.EMAIL);
+    const smsConfirmation = confirmation.includes(ConfirmationType.SMS);
 
     logger.verbose(`Providing contact details`);
     const res = await this.postRequest({
@@ -313,9 +323,7 @@ class BookingService {
     const title = $(TITLE_SELECTOR).text();
 
     if (title !== "Bekräfta bokning") {
-      const error = new Error();
-      error.page = $;
-      throw error;
+      throw new BookingPageError({ page: $ });
     }
   }
 
@@ -353,9 +361,7 @@ class BookingService {
     }
 
     if (title !== "Din bokning är nu klar") {
-      const error = new Error();
-      error.page = $;
-      throw error;
+      throw new BookingPageError({ page: $ });
     }
 
     const bookingNumber = $(".control-freetext").eq(0).text();
@@ -370,11 +376,11 @@ class BookingService {
   }
 }
 
-const getShortDate = (date) => {
+const getShortDate = (date: Date) => {
   return date.toISOString().split("T")[0];
 };
 
-const replaceSpecialChars = (inputValue) =>
+const replaceSpecialChars = (inputValue: string) =>
   inputValue
     .replace(/å/g, "a")
     .replace(/Å/g, "A")
@@ -382,5 +388,3 @@ const replaceSpecialChars = (inputValue) =>
     .replace(/Ä/g, "A")
     .replace(/ö/g, "o")
     .replace(/Ö/g, "O");
-
-module.exports = BookingService;

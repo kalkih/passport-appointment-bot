@@ -3,4 +3,5 @@ node_modules
 .DS_Store
 *.local*
 dist
+build
 .*.log

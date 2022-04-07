@@ -1,17 +1,19 @@
-const fs = require("fs");
-const path = require("path");
-const logger = require("./logger");
+import fs from "fs";
+import path from "path";
+import { logger } from "../logger";
+import { Config } from "./types";
 
-const readConfig = () => {
+const readConfig = (): Config => {
   try {
-    let configPath;
-    if (process.pkg) {
+    let configPath: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((process as any).pkg) {
       configPath = path.join(path.dirname(process.execPath), "./config.json");
     } else {
       configPath = path.join(process.cwd(), "./config.json");
     }
 
-    const config = JSON.parse(fs.readFileSync(configPath));
+    const config = JSON.parse(fs.readFileSync(configPath).toString());
 
     if (typeof config.personnummer === "string") {
       config.personnummer = [config.personnummer];
@@ -36,4 +38,4 @@ const readConfig = () => {
   }
 };
 
-module.exports = readConfig;
+export default readConfig;

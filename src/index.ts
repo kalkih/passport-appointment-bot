@@ -1,20 +1,26 @@
-const yargs = require("yargs/yargs");
-const { hideBin } = require("yargs/helpers");
-const argv = yargs(hideBin(process.argv)).argv;
-const logger = require("./logger");
-const tracker = require("./tracker");
-const validateConfig = require("./validateConfig");
-const readConfig = require("./readConfig");
-require("./server");
+import yargs from "yargs";
+import { Cheerio, Element } from "cheerio";
+// import { hideBin } from "yargs/helpers";
+// const argv = yargs(hideBin(process.argv)).argv;
+import { logger } from "./logger";
+import { tracker } from "./tracker";
+import { Location, readConfig, validateConfig } from "./configuration";
+import { BookingService } from "./services/bookingService";
+import "./server";
+
+const args = yargs.option("mock", {
+  alias: "m",
+  demand: false,
+  boolean: true,
+  default: false,
+}).argv;
 
 const config = readConfig();
-const BookingService = require("./services/bookingService");
+const locations = validateConfig(config);
 const maxDate = getMaxDate();
-let pendingBookingPromise = undefined;
+let pendingBookingPromise: undefined | Promise<void> = undefined;
 
 (async () => {
-  const locations = validateConfig(config);
-
   tracker.init((config.throttle * 1000) / config.sessions);
 
   const numOfSessions = Math.min(config.sessions ?? 1, 6);
@@ -32,22 +38,19 @@ let pendingBookingPromise = undefined;
   }
 })();
 
-async function init(locations, date) {
+async function init(locations: Location[], date: Date) {
+  const { mock } = await args;
   const numOfPeople = config.firstname.length;
-  const bookingService = new BookingService(
-    config.region,
-    numOfPeople,
-    argv.mock
-  );
+  const bookingService = new BookingService(config.region, numOfPeople, mock);
   await bookingService.init();
 
   checkAvailableSlotsForLocation(bookingService, [...locations], date);
 }
 
 async function checkAvailableSlotsForLocation(
-  bookingService,
-  locationQueue,
-  startDate
+  bookingService: BookingService,
+  locationQueue: Location[],
+  startDate: Date
 ) {
   let dateToCheck = startDate;
   const { name, id } = locationQueue[0];
@@ -62,7 +65,7 @@ async function checkAvailableSlotsForLocation(
       dateToCheck
     );
 
-    if (freeSlots.length && freeSlots.length > 0) {
+    if (freeSlots && freeSlots.length > 0) {
       if (!pendingBookingPromise) {
         logger.success(
           `${name} (${getShortDate(dateToCheck)}) ${
@@ -76,7 +79,7 @@ async function checkAvailableSlotsForLocation(
     } else {
       logger.verbose(
         `${name} (${getShortDate(dateToCheck)}) 0 free - ${
-          bookedSlots.length
+          bookedSlots?.length || 0
         } reserved`
       );
       dateToCheck = getStartOfWeekDate(addDays(dateToCheck));
@@ -91,15 +94,21 @@ async function checkAvailableSlotsForLocation(
   }
   logger.debug("Max date reached, checking next location...");
 
-  locationQueue.push(locationQueue.shift());
+  const location = locationQueue.shift();
+  location && locationQueue.push(location);
+
   const nextStartDate = config.min_date
     ? getStartOfWeekDate(config.min_date)
     : getToday();
   checkAvailableSlotsForLocation(bookingService, locationQueue, nextStartDate);
 }
 
-async function handleBooking(bookingService, freeSlots, locationId) {
-  const parent = freeSlots[0].parent;
+async function handleBooking(
+  bookingService: BookingService,
+  freeSlots: Cheerio<Element> | never[],
+  locationId: number
+) {
+  const parent = freeSlots[0].parentNode as Element;
   const serviceTypeId = parent.attribs["data-servicetypeid"];
   const timeslot = parent.attribs["data-fromdatetime"];
 
@@ -130,14 +139,14 @@ async function handleBooking(bookingService, freeSlots, locationId) {
   }
 }
 
-function shuffleArray(array) {
+function shuffleArray<T>(array: T[]) {
   return array
     .map((value) => ({ value, sort: Math.random() }))
     .sort((a, b) => a.sort - b.sort)
     .map(({ value }) => value);
 }
 
-function randomDate(start, end) {
+function randomDate(start: Date, end: Date): Date {
   const date = new Date(
     start.getTime() + Math.random() * (end.getTime() - start.getTime())
   );
@@ -145,19 +154,19 @@ function randomDate(start, end) {
   return date;
 }
 
-function getToday() {
+function getToday(): Date {
   const date = new Date();
   date.setUTCHours(12, 0, 0, 0);
   return date;
 }
 
-function getMaxDate() {
+function getMaxDate(): Date {
   const date = new Date(config.max_date);
   date.setUTCHours(12, 0, 0, 0);
   return date;
 }
 
-function getStartOfWeekDate(inDate) {
+function getStartOfWeekDate(inDate: string | Date): Date {
   const date = new Date(inDate);
   const day = date.getDay();
   const diff = date.getDate() - day + (day == 0 ? -6 : 1);
@@ -165,12 +174,12 @@ function getStartOfWeekDate(inDate) {
   return date;
 }
 
-const addDays = (inDate) => {
+const addDays = (inDate: string | Date) => {
   const date = new Date(inDate);
   date.setDate(date.getDate() + 7);
   return date;
 };
 
-const getShortDate = (date) => {
+const getShortDate = (date: Date) => {
   return date.toISOString().split("T")[0];
 };

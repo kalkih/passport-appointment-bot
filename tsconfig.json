@@ -1,0 +1,10 @@
+{
+  "extends": "@tsconfig/node17/tsconfig.json",
+  "include": ["src", "typings"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "outDir": "build"
+  },
+  "types": ["node"],
+  "typeRoots": ["typings"]
+}

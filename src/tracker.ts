@@ -1,11 +1,20 @@
-const logger = require("./logger");
+import { logger } from "./logger";
 
 const MIN_INTERVAL = 30 * 1000;
 
-const tracker = {
+interface Tracker {
+  checks: number;
+  start: undefined | Date;
+  lastChecks: number;
+  slow: boolean;
+  init: (interval: number) => void;
+  track: () => void;
+}
+
+export const tracker: Tracker = {
   checks: 0,
   start: undefined,
-  lastChecks: undefined,
+  lastChecks: 0,
   slow: false,
   init(interval) {
     setInterval(() => {
@@ -21,7 +30,8 @@ const tracker = {
         return;
       }
 
-      const secondsRunning = (new Date() - this.start) / 1000;
+      const secondsRunning =
+        (new Date().getTime() - this.start.getTime()) / 1000;
       const num = (this.checks / secondsRunning).toLocaleString("sv-SE", {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2,
@@ -38,5 +48,3 @@ const tracker = {
     this.checks += 1;
   },
 };
-
-module.exports = tracker;

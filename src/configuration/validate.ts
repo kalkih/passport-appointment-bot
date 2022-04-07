@@ -1,7 +1,8 @@
-const logger = require("./logger");
-const LOCATIONS = require("./locations");
+import { logger } from "../logger";
+import { isValidRegion, LOCATIONS, Locations } from "../locations";
+import { Config, ConfirmationType, Location } from "./types";
 
-const requiredProperties = [
+const REQUIRED_PROPERTIES = [
   "region",
   "locations",
   "max_date",
@@ -15,12 +16,12 @@ const requiredProperties = [
   "confirmation",
 ];
 
-const validateConfig = (config) => {
+export default (config: Config) => {
   logger.info("Validating configuration...");
 
   const region = validateRegion(config.region);
   const locations = validateLocations(region.locations, config.locations);
-  requiredProperties.forEach((prop) => {
+  REQUIRED_PROPERTIES.forEach((prop) => {
     if (!(prop in config)) {
       logger.error(`Missing required configuration for ${prop}.`);
       process.exit();
@@ -39,7 +40,11 @@ const validateConfig = (config) => {
   }
 
   if (
-    !config.confirmation.some((option) => ["email", "sms"].includes(option))
+    !config.confirmation.some(
+      (option) =>
+        option &&
+        [ConfirmationType.EMAIL, ConfirmationType.SMS].includes(option)
+    )
   ) {
     logger.error(
       "Configuration option 'confirmation' must be set to 'email' and/or 'sms'"
@@ -58,9 +63,9 @@ const validateConfig = (config) => {
   return locations;
 };
 
-function validateRegion(region) {
+function validateRegion(region: string) {
   logger.debug("Validating configured region...");
-  if (!LOCATIONS[region]) {
+  if (!isValidRegion(region)) {
     logger.error(`Region not supported: ${region}, exiting...`);
     process.exit();
   }
@@ -68,11 +73,11 @@ function validateRegion(region) {
   return LOCATIONS[region];
 }
 
-function validateLocations(validLocations, locations) {
+function validateLocations(validLocations: Locations, locations: string[]) {
   logger.debug("Validating configured locations...");
-  const confirmedLocations = [];
+  const confirmedLocations: Location[] = [];
   for (const location of locations) {
-    if (validLocations[location]) {
+    if (location in validLocations) {
       confirmedLocations.push({ name: location, id: validLocations[location] });
     } else {
       logger.warn(`Location not found: ${location}, skipping...`);
@@ -89,5 +94,3 @@ function validateLocations(validLocations, locations) {
   );
   return confirmedLocations;
 }
-
-module.exports = validateConfig;
