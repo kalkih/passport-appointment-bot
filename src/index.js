@@ -111,12 +111,12 @@ async function handleBooking(bookingService, freeSlots, locationId) {
   );
 
   if (booking) {
-    logger.log("success", "BOOKING SUCCESSFUL");
-    logger.log("success", `Booking number: \t ${booking.bookingNumber}`);
-    logger.log("success", `Time: \t\t\t ${booking.slot}`);
-    logger.log("success", `Location: \t\t ${booking.expedition}`);
-    logger.log("success", `Email: \t\t\t ${config.email}`);
-    logger.log("success", `Phone: \t\t\t ${config.phone}`);
+    logger.success("BOOKING SUCCESSFUL");
+    logger.success(`Booking number: \t ${booking.bookingNumber}`);
+    logger.success(`Time: \t\t\t ${booking.slot}`);
+    logger.success(`Location: \t\t ${booking.expedition}`);
+    logger.success(`Email: \t\t\t ${config.email}`);
+    logger.success(`Phone: \t\t\t ${config.phone}`);
     process.exit();
   } else {
     logger.error(`Failed booking slot ${timeslot}`);

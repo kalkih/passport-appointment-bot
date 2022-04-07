@@ -96,16 +96,16 @@ class CaptchaService {
     }
 
     logger.warn("Manual captcha verification required");
-    logger.verbose("Opening captcha page...");
+    logger.info("Opening captcha page...");
     await this.openCaptcha();
     logger.debug("Opened captcha page");
 
-    logger.info("Waiting for captcha input...");
+    logger.verbose("Waiting for captcha input...");
     const token = await new Promise((resolve) => {
       const interval = setInterval(() => {
         if (this.verifiedToken.length > 0) {
           clearInterval(interval);
-          logger.verbose("Got new verified captcha token");
+          logger.success("Received captcha from user");
           return resolve(this.verifiedToken.shift());
         }
       }, 500);

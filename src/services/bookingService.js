@@ -57,7 +57,7 @@ class BookingService {
   }
 
   async init() {
-    logger.info("Starting booking session...");
+    logger.info("Launching booking session...");
     await this.fetch(this.baseUrl);
 
     await this.postRequest({
@@ -75,7 +75,7 @@ class BookingService {
       "mtcaptcha-verifiedtoken": verifiedToken,
       Next: "Nästa",
     });
-    logger.log("success", "Accepted booking terms");
+    logger.log("info", "Accepted booking terms");
 
     logger.debug("Setting residency...");
     await this.postRequest(

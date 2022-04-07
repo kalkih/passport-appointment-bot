@@ -30,7 +30,7 @@ app.get("/sound.wav", (_, res) => {
 function createServer() {
   const server = app
     .listen(0, () => {
-      logger.verbose(
+      logger.debug(
         `Started captcha webserver on port ${server.address().port}`
       );
     })
