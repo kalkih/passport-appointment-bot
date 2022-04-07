@@ -34,13 +34,13 @@ class BookingService {
     this.region = region;
     this.mock = mock;
     this.fetchInstance = makeFetchCookie(nodeFetch);
-    this.fetch = (url, options = {}) =>
+    this.fetch = (url = generateBaseUrl(this.region), options = {}) =>
       this.fetchInstance(url, {
         ...options,
         headers: {
           "User-Agent":
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.60 Safari/537.36",
-          Referer: this.baseUrl,
+          Referer: generateBaseUrl(this.region),
           ...(options.headers || {}),
         },
       });
@@ -48,17 +48,9 @@ class BookingService {
     this.numberOfPeople = numberOfPeople;
   }
 
-  get baseUrl() {
-    return generateBaseUrl(this.region);
-  }
-
-  get postUrl() {
-    return generatePostUrl(this.region);
-  }
-
   async init() {
     logger.info("Launching booking session...");
-    await this.fetch(this.baseUrl);
+    await this.fetch();
 
     await this.postRequest({
       FormId: 1,
@@ -99,7 +91,7 @@ class BookingService {
 
   async postRequest(body, retry = 0) {
     try {
-      const response = await this.fetch(this.postUrl, {
+      const response = await this.fetch(generatePostUrl(this.region), {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -111,7 +103,7 @@ class BookingService {
         return response;
       }
 
-      throw new Error("Something went wrong.");
+      throw new Error("Something went wrong");
     } catch (error) {
       logger.error(error.message, error.stack);
       if (retry > 6) {

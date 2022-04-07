@@ -1,5 +1,3 @@
-const path = require("path");
-const fs = require("fs");
 const puppeteer = require("puppeteer-extra");
 
 require("puppeteer-extra-plugin-stealth/evasions/chrome.app");
@@ -25,11 +23,6 @@ puppeteer.use(StealthPlugin());
 
 const logger = require("../logger");
 const server = require("../server");
-
-const captchaHtml = fs.readFileSync(
-  path.join(__dirname, "../../public/index.html"),
-  "utf8"
-);
 
 const HEADLESS_HEIGHT = 600;
 const HEADLESS_WIDTH = 600;
