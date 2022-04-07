@@ -49,7 +49,11 @@ class CaptchaService {
           product: "chrome",
           headless: false,
           executablePath: chromePath,
-          args: [`--window-size=${HEADLESS_WIDTH},${HEADLESS_HEIGHT}`],
+          args: [
+            `--window-size=${HEADLESS_WIDTH},${HEADLESS_HEIGHT}`,
+            "--autoplay-policy=no-user-gesture-required",
+          ],
+          ignoreDefaultArgs: ["--mute-audio"],
           defaultViewport: {
             width: HEADLESS_WIDTH,
             height: HEADLESS_HEIGHT,
@@ -74,13 +78,10 @@ class CaptchaService {
       this.sessions.push({ sessionId, browser });
       const pages = await browser.pages();
       const page = pages[0];
-      await page.goto(
-        "https://bokapass.nemoq.se/Booking/Booking/Index/Stockholm"
-      );
-      const captchaHtmlWithSessisonId = captchaHtml
-        .replaceAll("[SESSION_ID_PLACEHOLDER]", sessionId)
-        .replaceAll("[PORT_PLACEHOLDER]", server.address().port);
-      await page.setContent(captchaHtmlWithSessisonId);
+      page.setExtraHTTPHeaders({
+        origin: "https://bokapass.nemoq.se",
+      });
+      await page.goto(getCaptchaUrl(sessionId));
     } catch (error) {
       logger.error(
         "Failed opening captcha page, make sure you have Google Chrome installed",
@@ -135,6 +136,10 @@ class CaptchaService {
       );
     }
   }
+}
+
+function getCaptchaUrl(sessionId) {
+  return `http://localhost:${server.address().port}/captcha/${sessionId}`;
 }
 
 function getChromePaths() {

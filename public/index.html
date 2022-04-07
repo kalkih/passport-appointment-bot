@@ -27,9 +27,10 @@
       }
     </style>
     <script>
-      var sessionId = "[SESSION_ID_PLACEHOLDER]";
+      var path = location.pathname.split("/");
+      var sessionId = path.at(-1);
       function mt_verified(state) {
-        fetch("http://localhost:[PORT_PLACEHOLDER]", {
+        fetch(`${location.origin}/captcha`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -71,7 +72,7 @@
       })();
     </script>
     <script>
-      var audio = new Audio("http://localhost:[PORT_PLACEHOLDER]/sound.wav");
+      var audio = new Audio(location.origin + "/sound.wav");
       audio.play();
     </script>
   </head>

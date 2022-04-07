@@ -12,11 +12,15 @@ const CaptchaService = require("./services/captchaService");
 app.use(express.json());
 app.use(cors());
 
-app.post("/", (req, res) => {
+app.post("/captcha", (req, res) => {
   const { token, sessionId } = req.body;
   CaptchaService.addVerifiedToken(token);
   CaptchaService.sessionCompleted(sessionId);
   res.sendStatus(200);
+});
+
+app.get("/captcha/:sessionId", (_, res) => {
+  res.sendFile(path.join(__dirname, "../public/index.html"));
 });
 
 app.get("/sound.wav", (_, res) => {
