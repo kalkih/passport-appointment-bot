@@ -2,12 +2,15 @@ import express from "express";
 import cors from "cors";
 import path from "path";
 import { logger } from "./logger";
-const app = express();
-
 import { captchaService } from "./services/captchaService";
+import { websocket } from "./websocket";
+
+const app = express();
 
 app.use(express.json());
 app.use(cors());
+app.set("view engine", "pug");
+app.set("views", path.join(__dirname, "../views"));
 
 app.post("/captcha", (req, res) => {
   const { token, sessionId } = req.body;
@@ -17,7 +20,8 @@ app.post("/captcha", (req, res) => {
 });
 
 app.get("/captcha/:sessionId", (_, res) => {
-  res.sendFile(path.join(__dirname, "../public/index.html"));
+  // res.sendFile(path.join(__dirname, "../public/index.html"));
+  res.render("index");
 });
 
 app.get("/sound.wav", (_, res) => {
@@ -26,13 +30,27 @@ app.get("/sound.wav", (_, res) => {
 
 function createServer() {
   const server = app
-    .listen(0, () => {
+    .listen(3333, () => {
       logger.debug(`Started captcha webserver on port ${serverPort()}`);
     })
     .on("error", (error) => {
       logger.error("Failed starting webserver", error);
       process.exit();
     });
+
+  const ws = websocket(server);
+
+  setTimeout(() => {
+    console.log("notice");
+    ws.clients.forEach((client) => {
+      console.log(client);
+      client.send(JSON.stringify({ message: "hello world" }));
+    });
+  }, 5000);
+
+  process.on("message", (message) => {
+    console.log(message);
+  });
   return server;
 }
 

@@ -1,0 +1,70 @@
+head
+  meta(charset='UTF-8')
+  meta(http-equiv='X-UA-Compatible' content='IE=edge')
+  meta(name='viewport' content='width=device-width, initial-scale=1.0')
+  title passport-appointment-bot
+  style.
+    html,
+    body {
+    background: rgb(23, 29, 42);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
+    }
+    a {
+    color: white;
+    }
+    h3 {
+    text-align: center;
+    color: rgb(26, 241, 7);
+    }
+  script.
+    var path = location.pathname.split("/");
+    var sessionId = path.at(-1);
+    function mt_verified(state) {
+    fetch(`${location.origin}/captcha`, {
+    method: "POST",
+    headers: {
+    "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ token: state.verifiedToken, sessionId }),
+    }).then((res) => {
+    if (res.status === 200) {
+    document.querySelector("#status").innerHTML =
+    "Submitted successfully, page will close automatically...";
+    }
+    });
+    }
+  script.
+    var mtcaptchaConfig = {
+      sitekey: "MTPublic-CVBtYUW2o",
+      loadAnimation: "false",
+      theme: "highcontrast",
+      lang: "sv",
+      "verified-callback": "mt_verified",
+    };
+    (function () {
+    var mt_service = document.createElement("script");
+    mt_service.async = true;
+    mt_service.src =
+    "https://service.mtcaptcha.com/mtcv1/client/mtcaptcha.min.js";
+    (
+    document.getElementsByTagName("head")[0] ||
+    document.getElementsByTagName("body")[0]
+    ).appendChild(mt_service);
+    var mt_service2 = document.createElement("script");
+    mt_service2.async = true;
+    mt_service2.src =
+    "https://service2.mtcaptcha.com/mtcv1/client/mtcaptcha2.min.js";
+    (
+    document.getElementsByTagName("head")[0] ||
+    document.getElementsByTagName("body")[0]
+    ).appendChild(mt_service2);
+    })();
+  script.
+    var audio = new Audio(location.origin + "/sound.wav");
+    audio.play();
