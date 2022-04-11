@@ -43,7 +43,6 @@ export class BookingService {
     this.region = region;
     this.mock = mock;
     this.numberOfPeople = numberOfPeople;
-    // this.fetchInstance = makeFetchCookie(nodeFetch);
   }
 
   async fetch(url = generateBaseUrl(this.region), options: RequestInit = {}) {
@@ -162,8 +161,16 @@ export class BookingService {
     let recovered = false;
     for (let index = 0; index < 6; index++) {
       logger.warn(`Trying to recover booking session... ${index + 1}`);
-      const res = await this.fetch(`${generatePreviousUrl(this.region)}?id=1`);
-      const $ = cheerio.load(await res.text());
+      let $: CheerioAPI;
+      if (index === 0) {
+        const res = await this.fetch();
+        $ = cheerio.load(await res.text());
+      } else {
+        const res = await this.fetch(
+          `${generatePreviousUrl(this.region)}?id=1`
+        );
+        $ = cheerio.load(await res.text());
+      }
 
       const title = $(TITLE_SELECTOR).text();
 
