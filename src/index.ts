@@ -68,7 +68,7 @@ async function checkAvailableSlotsForLocation(
     if (freeSlots && freeSlots.length > 0) {
       if (!pendingBookingPromise) {
         logger.success(
-          `${name} (${getShortDate(dateToCheck)}) ${
+          `${name} (Week ${getShortDate(dateToCheck)}): ${
             freeSlots.length
           } free time slots`
         );
@@ -78,7 +78,7 @@ async function checkAvailableSlotsForLocation(
       }
     } else {
       logger.verbose(
-        `${name} (${getShortDate(dateToCheck)}) 0 free - ${
+        `${name} (Week ${getShortDate(dateToCheck)}): 0 free - ${
           bookedSlots?.length || 0
         } reserved`
       );
