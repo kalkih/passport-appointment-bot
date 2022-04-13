@@ -112,7 +112,7 @@ Supported regions & locations can also be found in the `src/locations.js` file.
 - Åre
 - Östersund
 
-#### Jönkoping
+#### Jönköping
 
 - Eksjö
 - Jönköping
