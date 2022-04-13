@@ -1,15 +1,20 @@
-import nodeFetch, { RequestInit, Response } from "node-fetch";
+import nodeFetch, { FetchError, RequestInit, Response } from "node-fetch";
+import { AbortSignal } from "node-fetch/externals";
 import makeFetchCookie from "fetch-cookie";
 import cheerio, { Cheerio, CheerioAPI, Element } from "cheerio";
 import { logger } from "../logger";
 import { LOCATIONS, Region } from "../locations";
 import { captchaService } from "./captchaService";
 import { Config, ConfirmationType } from "../configuration";
+import { ProxyService } from "./proxyService";
 
 const TITLE_SELECTOR = ".header h1";
 const VALIDATION_ERROR_SELECTOR = ".validation-summary-errors";
 const EXISTING_BOOKING_ERROR_TEXT =
   "Det går endast att göra en bokning per e-postadress/telefonnummer";
+
+const DEFAULT_REQUEST_TIMEOUT = 30;
+const REQUEST_RETRY_COUNT = 25;
 
 const generateBaseUrl = (region: Region) =>
   `https://bokapass.nemoq.se/Booking/Booking/Index/${replaceSpecialChars(
@@ -24,6 +29,11 @@ const generatePreviousUrl = (region: Region) =>
     region.toLowerCase()
   )}`;
 
+enum SessionStatus {
+  INITIAL = "INITIAL",
+  INITIATED = "INITIATED",
+}
+
 class BookingPageError extends Error {
   page: CheerioAPI;
 
@@ -33,33 +43,86 @@ class BookingPageError extends Error {
   }
 }
 
-export class BookingService {
+interface BookingServiceConfig {
   region: Region;
-  mock: boolean;
-  numberOfPeople: number;
-  fetchInstance = makeFetchCookie(nodeFetch);
+  numberOfPeople?: number;
+  useProxy?: boolean;
+  proxyTimeout?: number;
+  mockBooking?: boolean;
+  proxyRetries?: number;
+}
 
-  constructor(region: Region, numberOfPeople = 1, mock = false) {
+export class BookingService {
+  private region: Region;
+  private mockBooking: boolean;
+  private numberOfPeople: number;
+  private fetchInstance = makeFetchCookie(nodeFetch);
+  private proxy?: ProxyService;
+  private requestTimeout: number;
+  private sessionStatus = SessionStatus.INITIAL;
+
+  constructor({
+    region,
+    numberOfPeople = 1,
+    mockBooking = false,
+    useProxy = false,
+    proxyTimeout = DEFAULT_REQUEST_TIMEOUT,
+    proxyRetries,
+  }: BookingServiceConfig) {
     this.region = region;
-    this.mock = mock;
+    this.mockBooking = mockBooking;
     this.numberOfPeople = numberOfPeople;
+    this.requestTimeout = (proxyTimeout || DEFAULT_REQUEST_TIMEOUT) * 1000;
+
+    if (useProxy) {
+      this.proxy = new ProxyService(proxyRetries);
+    }
   }
 
   async fetch(url = generateBaseUrl(this.region), options: RequestInit = {}) {
-    return this.fetchInstance(url, {
-      ...options,
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.60 Safari/537.36",
-        Referer: generateBaseUrl(this.region),
-        ...(options.headers || {}),
-      },
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, this.requestTimeout);
+
+    try {
+      const agent =
+        (this.sessionStatus === SessionStatus.INITIATED &&
+          this.proxy &&
+          this.proxy.agent) ||
+        undefined;
+      if (agent) {
+        logger.debug(
+          "Fetching with proxy",
+          options?.method || "GET",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (agent as any).proxy.href
+        );
+      }
+
+      const response = await this.fetchInstance(url, {
+        ...options,
+        agent,
+        signal: controller.signal as AbortSignal,
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.60 Safari/537.36",
+          Referer: generateBaseUrl(this.region),
+          ...(options.headers || {}),
+        },
+      });
+      return response;
+    } catch (err) {
+      this.proxy?.trackError();
+      throw err;
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
   async init() {
     logger.info("Launching booking session...");
-    await this.fetch();
+    await this.getRequest();
 
     await this.postRequest({
       FormId: 1,
@@ -93,6 +156,7 @@ export class BookingService {
           { Next: "Nästa" }
         )
     );
+    this.sessionStatus = SessionStatus.INITIATED;
     logger.success(
       `Started booking session for ${this.numberOfPeople} person(s)`
     );
@@ -110,18 +174,44 @@ export class BookingService {
       });
 
       if (!response.ok) {
+        this.proxy?.trackError();
         throw new Error("Something went wrong");
       }
 
       return response;
-    } catch (error) {
-      if (error instanceof Error) {
+    } catch (err) {
+      const error = err as Error | FetchError;
+      if (error.name === "AbortError") {
+        logger.warn(
+          `Request timed out after ${this.requestTimeout / 1000}s, retrying...`
+        );
+        return this.postRequest(body, retry);
+      }
+
+      if (error) {
         logger.error(error.message, error.stack);
-        if (retry > 6) {
+        if (retry > REQUEST_RETRY_COUNT) {
           logger.error("Too many retries, exiting", error.stack);
           process.exit();
         }
-        this.postRequest(body, retry + 1);
+        return this.postRequest(body, retry + 1);
+      }
+      throw new Error();
+    }
+  }
+
+  async getRequest(url?: string, retry = 0): Promise<Response> {
+    try {
+      return await this.fetch(url);
+    } catch (err) {
+      const error = err as Error | FetchError;
+      if (error) {
+        logger.error(error.message, error.stack);
+        if (retry > REQUEST_RETRY_COUNT) {
+          logger.error("Too many retries, exiting", error.stack);
+          process.exit();
+        }
+        return this.getRequest(url, retry + 1);
       }
       throw new Error();
     }
@@ -163,10 +253,10 @@ export class BookingService {
       logger.warn(`Trying to recover booking session... ${index + 1}`);
       let $: CheerioAPI;
       if (index === 0) {
-        const res = await this.fetch();
+        const res = await this.getRequest();
         $ = cheerio.load(await res.text());
       } else {
-        const res = await this.fetch(
+        const res = await this.getRequest(
           `${generatePreviousUrl(this.region)}?id=1`
         );
         $ = cheerio.load(await res.text());
@@ -335,7 +425,7 @@ export class BookingService {
   }
 
   async finalizeBooking() {
-    if (this.mock) {
+    if (this.mockBooking) {
       logger.verbose(`Mocking booking...`);
       return {
         bookingNumber: "123456789",

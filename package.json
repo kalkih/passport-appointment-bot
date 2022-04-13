@@ -44,6 +44,8 @@
     "cors": "^2.8.5",
     "express": "^4.17.3",
     "fetch-cookie": "^2.0.3",
+    "http-proxy-agent": "^5.0.0",
+    "https-proxy-agent": "^5.0.0",
     "node-fetch": "^2.6.7",
     "puppeteer": "npm:puppeteer-core@^13.5.2",
     "puppeteer-extra": "^3.2.3",

@@ -1,7 +1,5 @@
 import yargs from "yargs";
 import { Cheerio, Element } from "cheerio";
-// import { hideBin } from "yargs/helpers";
-// const argv = yargs(hideBin(process.argv)).argv;
 import { logger } from "./logger";
 import { tracker } from "./tracker";
 import { Location, readConfig, validateConfig } from "./configuration";
@@ -40,8 +38,14 @@ let pendingBookingPromise: undefined | Promise<void> = undefined;
 
 async function init(locations: Location[], date: Date) {
   const { mock } = await args;
-  const numOfPeople = config.firstname.length;
-  const bookingService = new BookingService(config.region, numOfPeople, mock);
+  const bookingService = new BookingService({
+    region: config.region,
+    numberOfPeople: config.firstname.length,
+    mockBooking: mock,
+    useProxy: config.useProxies,
+    proxyTimeout: config.proxyTimeout,
+    proxyRetries: config.proxyRetries,
+  });
   await bookingService.init();
 
   checkAvailableSlotsForLocation(bookingService, [...locations], date);

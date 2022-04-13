@@ -15,6 +15,9 @@ export interface Config {
   confirmation: [ConfirmationType?, ConfirmationType?];
   throttle: number;
   sessions: number;
+  useProxies: boolean;
+  proxyTimeout: number;
+  proxyRetries?: number;
 }
 
 export enum ConfirmationType {
