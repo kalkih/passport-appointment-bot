@@ -53,11 +53,9 @@ function getProxies(): string[] {
       .readFileSync(proxyPath, "utf8")
       .split("\n")
       .map((line) => line.replace("\r", "").trim());
-    logger.success(`Read ${proxies.length} from file`);
+    logger.success(`Read ${proxies.length} proxies from file`);
     return proxies;
   } catch {
-    logger.error(`Failed to load proxies from file ${proxyPath}`);
-    logger.info("Continuing without proxies");
     return [];
   }
 }

@@ -158,7 +158,9 @@ export class BookingService {
     );
     this.sessionStatus = SessionStatus.INITIATED;
     logger.success(
-      `Started booking session for ${this.numberOfPeople} person(s)`
+      `Started booking session for ${this.numberOfPeople} person(s) ${
+        this.proxy ? "using proxies" : ""
+      }`
     );
   }
 
