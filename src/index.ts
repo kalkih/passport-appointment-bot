@@ -5,6 +5,15 @@ import { tracker } from "./tracker";
 import { Location, readConfig, validateConfig } from "./configuration";
 import { BookingService } from "./services/bookingService";
 import "./server";
+import {
+  addDays,
+  getMaxDate,
+  getShortDate,
+  getStartOfWeekDate,
+  getToday,
+  randomDate,
+  shuffleArray,
+} from "./utils";
 
 const args = yargs.option("mock", {
   alias: "m",
@@ -15,7 +24,7 @@ const args = yargs.option("mock", {
 
 const config = readConfig();
 const locations = validateConfig(config);
-const maxDate = getMaxDate();
+const maxDate = getMaxDate(config.max_date);
 let pendingBookingPromise: undefined | Promise<void> = undefined;
 
 (async () => {
@@ -142,48 +151,3 @@ async function handleBooking(
     }
   }
 }
-
-function shuffleArray<T>(array: T[]) {
-  return array
-    .map((value) => ({ value, sort: Math.random() }))
-    .sort((a, b) => a.sort - b.sort)
-    .map(({ value }) => value);
-}
-
-function randomDate(start: Date, end: Date): Date {
-  const date = new Date(
-    start.getTime() + Math.random() * (end.getTime() - start.getTime())
-  );
-  date.setUTCHours(12, 0, 0, 0);
-  return date;
-}
-
-function getToday(): Date {
-  const date = new Date();
-  date.setUTCHours(12, 0, 0, 0);
-  return date;
-}
-
-function getMaxDate(): Date {
-  const date = new Date(config.max_date);
-  date.setUTCHours(12, 0, 0, 0);
-  return date;
-}
-
-function getStartOfWeekDate(inDate: string | Date): Date {
-  const date = new Date(inDate);
-  const day = date.getDay();
-  const diff = date.getDate() - day + (day == 0 ? -6 : 1);
-  date.setDate(diff);
-  return date;
-}
-
-const addDays = (inDate: string | Date) => {
-  const date = new Date(inDate);
-  date.setDate(date.getDate() + 7);
-  return date;
-};
-
-const getShortDate = (date: Date) => {
-  return date.toISOString().split("T")[0];
-};

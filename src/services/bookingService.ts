@@ -7,6 +7,7 @@ import { LOCATIONS, Region } from "../locations";
 import { captchaService } from "./captchaService";
 import { Config, ConfirmationType } from "../configuration";
 import { ProxyService } from "./proxyService";
+import { getShortDate } from "../utils";
 
 const TITLE_SELECTOR = ".header h1";
 const VALIDATION_ERROR_SELECTOR = ".validation-summary-errors";
@@ -474,10 +475,6 @@ export class BookingService {
     };
   }
 }
-
-const getShortDate = (date: Date) => {
-  return date.toISOString().split("T")[0];
-};
 
 const replaceSpecialChars = (inputValue: string) =>
   inputValue
