@@ -40,24 +40,32 @@ Requires **Nodejs** _(Tested on v17.7.1)_
 
 ### Configuration
 
-All options are required
+#### Basic configuration options
+
+| Option       | Required | Description                                                                                                                               |
+| ------------ | :------: | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| region       | &#x2705; | Desired region, see [Supported Regions & Locations](#supported-regions--locations)                                                        |
+| locations    | &#x2705; | One or more cities/locations, see [Supported Regions & Locations](#supported-regions--locations)                                          |
+| max_date     | &#x2705; | Latest date to search for appointment (will search all days in the week of the specified date)                                            |
+| min_date     | &#10060; | Earliest date to search for appointment (will search all days in the week of the specified date)                                          |
+| email        | &#x2705; | Email (confirmation will be sent to this address)                                                                                         |
+| phone        | &#x2705; | Phone number (confirmation will be sent to this number)                                                                                   |
+| personnummer | &#x2705; | Personnummer / Social security number(s), one or multiple when booking for more than one person e.g. `["19940101-8453", "19960101-6406"]` |
+| firstname    | &#x2705; | First name(s), one or multiple when booking for more than one person e.g. `["John", "Jane"]`                                              |
+| lastname     | &#x2705; | Last name(s), one or multiple when booking for more than one person e.g. `["Doe", "Doe"]`                                                 |
+| passport     | &#x2705; | Set to `true` if the booking appointment is for passport, else `false`                                                                    |
+| id           | &#x2705; | Set to `true` if the booking appointment is for national identity card, else `false`                                                      |
+| confirmation | &#x2705; | Method for receiving booking confirmation `email` and/or `sms`                                                                            |
+
+#### Advanced configuration options
 
 | Option       | Required | Description                                                                                                                                                                                                                  |
 | ------------ | :------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| region       | &#x2705; | Desired region, see [Supported Regions & Locations](#supported-regions--locations)                                                                                                                                           |
-| locations    | &#x2705; | One or more cities/locations, see [Supported Regions & Locations](#supported-regions--locations)                                                                                                                             |
-| max_date     | &#x2705; | Latest date to search for appointment (will search all days in the week of the specified date)                                                                                                                               |
-| min_date     | &#10060; | Earliest date to search for appointment (will search all days in the week of the specified date)                                                                                                                             |
-| email        | &#x2705; | Email (confirmation will be sent to this address)                                                                                                                                                                            |
-| phone        | &#x2705; | Phone number (confirmation will be sent to this number)                                                                                                                                                                      |
-| personnummer | &#x2705; | Personnummer / Social security number(s), one or multiple when booking for more than one person e.g. `["19940101-8453", "19960101-6406"]`                                                                                    |
-| firstname    | &#x2705; | First name(s), one or multiple when booking for more than one person e.g. `["John", "Jane"]`                                                                                                                                 |
-| lastname     | &#x2705; | Last name(s), one or multiple when booking for more than one person e.g. `["Doe", "Doe"]`                                                                                                                                    |
-| passport     | &#x2705; | Set to `true` if the booking appointment is for passport, else `false`                                                                                                                                                       |
-| id           | &#x2705; | Set to `true` if the booking appointment is for national identity card, else `false`                                                                                                                                         |
-| confirmation | &#x2705; | Method for receiving booking confirmation `email` and/or `sms`                                                                                                                                                               |
 | sessions     | &#x2705; | Number of concurrent booking sessions to run, higher number equals faster checking of available times and opens up for checking several locations in parallel, (will still only book one appointment in the end) **(max 6)** |
 | throttle     | &#x2705; | Add a timeout (in seconds) between searches                                                                                                                                                                                  |
+| useProxies   | &#10060; | Set to `true` to use proxies for booking sessions, (a proxy list is required, see [Proxy information](#proxy-feature-information) for additional information.                                                                |
+| proxyTimeout | &#10060; | When using `setProxies` use this option to set the timeout in seconds before a proxy request should timeout and retry, **Default 30**.                                                                                       |
+| proxyRetries | &#10060; | When using `setProxies` use this option to set the number of request retries with each proxy before switching proxy, **Default 3**.                                                                                          |
 
 ### Good to know
 
@@ -246,3 +254,22 @@ Supported regions & locations can also be found in the `src/locations.js` file.
 - Linköping
 - Motala
 - Norrköping
+
+### Proxy feature information
+
+When setting the `useProxies` option to `true` you are expected to provide a list of proxies to use, the application expects a file named `proxies.txt` to be present in the same directory as the application. This file should include one proxy per line, the proxy should be in the format `[IP]:[PORT]`.
+
+**Example**
+
+```txt
+0.0.0.0:6969
+1.1.1.1:9999
+2.2.2.2:420
+```
+
+This feature does currently only support **HTTP**/**HTTPS** proxies.
+
+The application will cycle through the proxies in the list and will retry the request if the proxy is not responding, if a request times out multiple times with the same proxy, the application will switch to the next proxy in the list.  
+The thresholds for this behaviour can be configured through the `proxyTimeout` and `proxyRetries` configuration options.
+
+For the best results use a list of high quality proxies.
