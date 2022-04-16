@@ -1,13 +1,23 @@
 import fs from "fs";
 import { logger } from "../logger";
 import { getPath } from "../utils";
-import { Config } from "./types";
+import { Config, RequiredConfig } from "./types";
+
+const DEFAULT_OPTIONS = {
+  sessions: 1,
+  throttle: 0,
+  useProxies: false,
+  proxyTimeout: 30,
+  proxyRetries: 3,
+};
 
 const readConfig = (): Config => {
   try {
     const configPath = getPath("./config.json");
 
-    const config = JSON.parse(fs.readFileSync(configPath).toString());
+    const config: RequiredConfig = JSON.parse(
+      fs.readFileSync(configPath).toString()
+    );
 
     if (typeof config.personnummer === "string") {
       config.personnummer = [config.personnummer];
@@ -26,8 +36,7 @@ const readConfig = (): Config => {
     }
 
     return {
-      useProxies: false,
-      proxyTimeout: 0,
+      ...DEFAULT_OPTIONS,
       ...config,
     };
   } catch (error) {

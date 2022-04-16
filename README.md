@@ -59,13 +59,13 @@ Requires **Nodejs** _(Tested on v17.7.1)_
 
 #### Advanced configuration options
 
-| Option       | Required | Description                                                                                                                                                                                                                  |
-| ------------ | :------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| sessions     | &#x2705; | Number of concurrent booking sessions to run, higher number equals faster checking of available times and opens up for checking several locations in parallel, (will still only book one appointment in the end) **(max 6)** |
-| throttle     | &#x2705; | Add a timeout (in seconds) between searches                                                                                                                                                                                  |
-| useProxies   | &#10060; | Set to `true` to use proxies for booking sessions, (a proxy list is required, see [Proxy information](#proxy-feature-information) for additional information.                                                                |
-| proxyTimeout | &#10060; | When using `setProxies` use this option to set the timeout in seconds before a proxy request should timeout and retry, **Default 30**.                                                                                       |
-| proxyRetries | &#10060; | When using `setProxies` use this option to set the number of request retries with each proxy before switching proxy, **Default 3**.                                                                                          |
+| Option       | Required | Default | Description                                                                                                                                                                                                                   |
+| ------------ | :------: | :-----: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| sessions     | &#10060; |   `1`   | Number of concurrent booking sessions to run, higher number equals faster checking of available times and opens up for checking multiple locations in parallel, (will still just book one appointment in the end) **(max 6)** |
+| throttle     | &#10060; |   `0`   | The time to wait in **seconds** between searches                                                                                                                                                                              |
+| useProxies   | &#10060; | `false` | Set to `true` to use proxies for booking sessions, (a proxy list is required, see [Proxy information](#proxy-feature-information) for additional information.                                                                 |
+| proxyTimeout | &#10060; |  `30`   | When using `setProxies` use this option to set the timeout in seconds before a proxy request should timeout and retry.                                                                                                        |
+| proxyRetries | &#10060; |   `3`   | When using `setProxies` use this option to set the number of request retries with each proxy before switching proxy..                                                                                                         |
 
 ### Good to know
 

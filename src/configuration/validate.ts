@@ -1,8 +1,8 @@
 import { logger } from "../logger";
 import { isValidRegion, LOCATIONS, Locations } from "../locations";
-import { Config, ConfirmationType, Location } from "./types";
+import { Config, ConfirmationType, Location, RequiredConfig } from "./types";
 
-const REQUIRED_PROPERTIES = [
+const REQUIRED_PROPERTIES: (keyof RequiredConfig)[] = [
   "region",
   "locations",
   "max_date",
