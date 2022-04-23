@@ -4,7 +4,6 @@ import { logger } from "./logger";
 import { tracker } from "./tracker";
 import { Location, readConfig, validateConfig } from "./configuration";
 import { BookingService } from "./services/bookingService";
-import "./server";
 import {
   addDays,
   getMaxDate,
@@ -49,7 +48,7 @@ async function init(locations: Location[], date: Date) {
   const { mock } = await args;
   const bookingService = new BookingService({
     region: config.region,
-    numberOfPeople: config.firstname.length,
+    numberOfPeople: 1 + config.extra_firstnames.length,
     mockBooking: mock,
     useProxy: config.useProxies,
     proxyTimeout: config.proxyTimeout,

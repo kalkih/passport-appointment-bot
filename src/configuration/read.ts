@@ -4,6 +4,9 @@ import { getPath } from "../utils";
 import { Config, RequiredConfig } from "./types";
 
 const DEFAULT_OPTIONS = {
+  extra_firstnames: [],
+  extra_lastnames: [],
+  extra_personnummer: [],
   sessions: 1,
   throttle: 0,
   useProxies: false,
@@ -18,18 +21,6 @@ const readConfig = (): Config => {
     const config: RequiredConfig = JSON.parse(
       fs.readFileSync(configPath).toString()
     );
-
-    if (typeof config.personnummer === "string") {
-      config.personnummer = [config.personnummer];
-    }
-
-    if (typeof config.firstname === "string") {
-      config.firstname = [config.firstname];
-    }
-
-    if (typeof config.lastname === "string") {
-      config.lastname = [config.lastname];
-    }
 
     if (typeof config.confirmation === "string") {
       config.confirmation = [config.confirmation];

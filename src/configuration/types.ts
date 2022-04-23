@@ -6,15 +6,15 @@ export interface RequiredConfig {
   max_date: string;
   email: string;
   phone: string;
-  personnummer: string[];
-  firstname: string[];
-  lastname: string[];
   passport: boolean;
   id: boolean;
   confirmation: [ConfirmationType?, ConfirmationType?];
 }
 
 export interface OptionalConfig {
+  extra_personnummer?: string[];
+  extra_firstnames?: string[];
+  extra_lastnames?: string[];
   min_date?: string;
   throttle?: number;
   sessions?: number;
@@ -24,6 +24,9 @@ export interface OptionalConfig {
 }
 
 export interface Config extends RequiredConfig, OptionalConfig {
+  extra_personnummer: string[];
+  extra_firstnames: string[];
+  extra_lastnames: string[];
   throttle: number;
   sessions: number;
   useProxies: boolean;

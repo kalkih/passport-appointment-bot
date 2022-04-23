@@ -18,12 +18,11 @@ Requires **Google Chrome**
 
 Download `config.json` & `passport-appointment-bot` for your OS from the [latest release](https://github.com/kalkih/passport-appointment-bot/releases/latest), place them in the same folder.
 
-1. Edit the configuration file you downloaded (`config.json`) with text editor of choice, see [Configuration](#configuration) for option descriptions
-2. Run the executable you downloaded `passport-appointment-bot`
-3. The bot will open a webpage where the user is required to solve a captcha in order to proceed
+1. Edit the configuration file downloaded (`config.json`) with any text editor, see [Configuration](#configuration) for information on the options
+2. Run the executable downloaded earlier `passport-appointment-bot`
+3. The bot will prompt for BankID identification (BankID is now required in order to book an appointment)
 4. The bot will search until an appointment is found
-5. The bot will once again open a webpage where the user is required to solve a captcha in order to proceed
-6. The bot will proceed with the booking and a booking confirmation should be sent to the configured email and will also be displayed in the program
+5. A booking confirmation will be sent to the configured email and/or phonenumber specified in the config, it will also be displayed in the application
 
 ### Run from source
 
@@ -31,31 +30,37 @@ Requires **Google Chrome**
 Requires **Nodejs** _(Tested on v17.7.1)_
 
 1. Clone the project, install dependencies with `npm install`
-2. Edit configuration values in `config.json`, see [Configuration](#configuration) for option descriptions
+2. Edit configuration values in `config.json`, see [Configuration](#configuration) for information on the options
 3. Run the bot with `npm start`
-4. The bot will open a webpage where the user is required to solve a captcha in order to proceed
+4. The bot will prompt for BankID identification (BankID is now required in order to book an appointment)
 5. The bot will search until an appointment is found
-6. The bot will once again open a webpage where the user is required to solve a captcha in order to proceed
-7. The bot will proceed with the booking and a booking confirmation should be sent to the configured email and will also be displayed in the console
+6. A booking confirmation will be sent to the configured email and/or phonenumber specified in the config, it will also be displayed in the console
 
 ### Configuration
 
 #### Basic configuration options
 
-| Option       | Required | Description                                                                                                                               |
-| ------------ | :------: | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| region       | &#x2705; | Desired region, see [Supported Regions & Locations](#supported-regions--locations)                                                        |
-| locations    | &#x2705; | One or more cities/locations, see [Supported Regions & Locations](#supported-regions--locations)                                          |
-| max_date     | &#x2705; | Latest date to search for appointment (will search all days in the week of the specified date)                                            |
-| min_date     | &#10060; | Earliest date to search for appointment (will search all days in the week of the specified date)                                          |
-| email        | &#x2705; | Email (confirmation will be sent to this address)                                                                                         |
-| phone        | &#x2705; | Phone number (confirmation will be sent to this number)                                                                                   |
-| personnummer | &#x2705; | Personnummer / Social security number(s), one or multiple when booking for more than one person e.g. `["19940101-8453", "19960101-6406"]` |
-| firstname    | &#x2705; | First name(s), one or multiple when booking for more than one person e.g. `["John", "Jane"]`                                              |
-| lastname     | &#x2705; | Last name(s), one or multiple when booking for more than one person e.g. `["Doe", "Doe"]`                                                 |
-| passport     | &#x2705; | Set to `true` if the booking appointment is for passport, else `false`                                                                    |
-| id           | &#x2705; | Set to `true` if the booking appointment is for national identity card, else `false`                                                      |
-| confirmation | &#x2705; | Method for receiving booking confirmation `email` and/or `sms`                                                                            |
+| Option       | Required | Description                                                                                      |
+| ------------ | :------: | ------------------------------------------------------------------------------------------------ |
+| region       | &#x2705; | Desired region, see [Supported Regions & Locations](#supported-regions--locations)               |
+| locations    | &#x2705; | One or more cities/locations, see [Supported Regions & Locations](#supported-regions--locations) |
+| max_date     | &#x2705; | Latest date to search for appointment (will search all days in the week of the specified date)   |
+| min_date     | &#10060; | Earliest date to search for appointment (will search all days in the week of the specified date) |
+| email        | &#x2705; | Email (confirmation will be sent to this address)                                                |
+| phone        | &#x2705; | Phone number (confirmation will be sent to this number)                                          |
+| passport     | &#x2705; | Set to `true` if the booking appointment is for passport, else `false`                           |
+| id           | &#x2705; | Set to `true` if the booking appointment is for national identity card, else `false`             |
+| confirmation | &#x2705; | Method for receiving booking confirmation `email` and/or `sms`                                   |
+
+#### Multiple people booking options
+
+When booking for more than the person identifying with BankID, use these options to provide personal details for the other people (Do not include personal details for the person idetifying with BankID).
+
+| Option             | Required | Description                                                                                                                          |
+| ------------------ | :------: | ------------------------------------------------------------------------------------------------------------------------------------ |
+| extra_personnummer | &#10060; | Additional Personnummer / Social security number(s), when booking for more than one person e.g. `["19940101-8453", "19960101-6406"]` |
+| extra_firstnames   | &#10060; | Additional firstname(s), when booking for more than one person e.g. `["John", "Jane"]`                                               |
+| extra_lastnames    | &#10060; | Additional lastname(s), when booking for more than one person e.g. `["Doe", "Doe"]`                                                  |
 
 #### Advanced configuration options
 

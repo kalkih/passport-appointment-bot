@@ -4,18 +4,18 @@ import makeFetchCookie from "fetch-cookie";
 import cheerio, { Cheerio, CheerioAPI, Element } from "cheerio";
 import { logger } from "../logger";
 import { LOCATIONS, Region } from "../locations";
-import { captchaService } from "./captchaService";
 import { Config, ConfirmationType } from "../configuration";
 import { ProxyService } from "./proxyService";
 import { getShortDate } from "../utils";
+import { BankIdService } from "./bankIdService";
 
 const TITLE_SELECTOR = ".header h1";
 const VALIDATION_ERROR_SELECTOR = ".validation-summary-errors";
 const EXISTING_BOOKING_ERROR_TEXT =
-  "Det går endast att göra en bokning per e-postadress/telefonnummer";
+  "Det går endast att göra en bokning per personnummer/e-postadress/telefonnummer";
 
 const DEFAULT_REQUEST_TIMEOUT = 30;
-const REQUEST_RETRY_COUNT = 25;
+const REQUEST_RETRY_COUNT = 3;
 
 const generateBaseUrl = (region: Region) =>
   `https://bokapass.nemoq.se/Booking/Booking/Index/${replaceSpecialChars(
@@ -33,6 +33,12 @@ const generatePreviousUrl = (region: Region) =>
 enum SessionStatus {
   INITIAL = "INITIAL",
   INITIATED = "INITIATED",
+}
+
+interface PersonalDetails {
+  tin: string;
+  firstname: string;
+  lastname: string;
 }
 
 class BookingPageError extends Error {
@@ -125,19 +131,23 @@ export class BookingService {
     logger.info("Launching booking session...");
     await this.getRequest();
 
-    await this.postRequest({
+    const res = await this.postRequest({
       FormId: 1,
       ServiceGroupId: LOCATIONS[this.region].id,
       StartNextButton: "Boka ny tid",
     });
 
-    const verifiedToken = await captchaService.getNewVerifiedToken();
+    const sessionId = res.url.split("?sessionid=")[1];
+    const bankIdService = new BankIdService(sessionId);
+    const sessionUrl = await bankIdService.identify();
+
+    await this.getRequest(sessionUrl);
+
     logger.debug("Accepting booking terms...");
     await this.postRequest({
       AgreementText: "123",
       AcceptInformationStorage: true,
       NumberOfPeople: this.numberOfPeople,
-      "mtcaptcha-verifiedtoken": verifiedToken,
       Next: "Nästa",
     });
     logger.log("info", "Accepted booking terms");
@@ -165,10 +175,14 @@ export class BookingService {
     );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async postRequest(body: Record<string, any>, retry = 0): Promise<Response> {
+  async postRequest(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    body: Record<string, any>,
+    url = generatePostUrl(this.region),
+    retry = 0
+  ): Promise<Response> {
     try {
-      const response = await this.fetch(generatePostUrl(this.region), {
+      const response = await this.fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -188,16 +202,16 @@ export class BookingService {
         logger.warn(
           `Request timed out after ${this.requestTimeout / 1000}s, retrying...`
         );
-        return this.postRequest(body, retry);
+        return this.postRequest(body, url, retry);
       }
 
       if (error) {
         logger.error(error.message, error.stack);
-        if (retry > REQUEST_RETRY_COUNT) {
+        if (retry >= REQUEST_RETRY_COUNT) {
           logger.error("Too many retries, exiting", error.stack);
           process.exit();
         }
-        return this.postRequest(body, retry + 1);
+        return this.postRequest(body, url, retry + 1);
       }
       throw new Error();
     }
@@ -282,8 +296,12 @@ export class BookingService {
     config: Config
   ) {
     try {
-      await this.selectSlot(serviceTypeId, timeslot, location);
-      await this.providePersonalDetails(config);
+      const personalDetails = await this.selectSlot(
+        serviceTypeId,
+        timeslot,
+        location
+      );
+      await this.providePersonalDetails(personalDetails, config);
       await this.confirmSlot();
       await this.provideContactDetails(config);
       return await this.finalizeBooking();
@@ -303,7 +321,11 @@ export class BookingService {
     }
   }
 
-  async selectSlot(serviceTypeId: string, timeslot: string, location: number) {
+  async selectSlot(
+    serviceTypeId: string,
+    timeslot: string,
+    location: number
+  ): Promise<PersonalDetails> {
     logger.verbose(`Selecting timeslot (${timeslot})`);
     const res = await this.postRequest({
       FormId: 2,
@@ -324,31 +346,46 @@ export class BookingService {
     if (title !== "Uppgifter till bokningen") {
       throw new BookingPageError({ page: $ });
     }
+
+    const tin = $("#Customers_0__BookingFieldValues_0__Value").text();
+    const firstname = $("#Customers_0__BookingFieldValues_1__Value").text();
+    const lastname = $("#Customers_0__BookingFieldValues_2__Value").text();
+
+    return { tin, firstname, lastname };
   }
 
-  async providePersonalDetails({
-    personnummer,
-    firstname,
-    lastname,
-    passport,
-    id,
-  }: Config) {
-    const verifiedToken = await captchaService.getNewVerifiedToken();
-
+  async providePersonalDetails(
+    personalDetails: PersonalDetails,
+    {
+      passport,
+      id,
+      extra_firstnames,
+      extra_lastnames,
+      extra_personnummer,
+    }: Config
+  ) {
+    const people = [
+      personalDetails,
+      ...[extra_personnummer].map((_, i) => ({
+        firstname: [extra_firstnames][i],
+        lastname: [extra_lastnames][i],
+        tin: [extra_personnummer][i],
+      })),
+    ];
     logger.verbose(`Providing personal details`);
-    const customerData = firstname.map((_, index) => ({
+    const customerData = people.map((person, index) => ({
       [`Customers[${index}].BookingCustomerId`]: 0,
-      [`Customers[${index}].BookingFieldValues[0].Value`]: personnummer[index],
+      [`Customers[${index}].BookingFieldValues[0].Value`]: person.tin,
       [`Customers[${index}].BookingFieldValues[0].BookingFieldId`]: 1,
       [`Customers[${index}].BookingFieldValues[0].BookingFieldTextName`]:
         "BF_2_PERSONNUMMER",
       [`Customers[${index}].BookingFieldValues[0].FieldTypeId`]: 1,
-      [`Customers[${index}].BookingFieldValues[1].Value`]: firstname[index],
+      [`Customers[${index}].BookingFieldValues[1].Value`]: person.firstname,
       [`Customers[${index}].BookingFieldValues[1].BookingFieldId`]: 5,
       [`Customers[${index}].BookingFieldValues[1].BookingFieldTextName`]:
         "BF_2_FÖRNAMN",
       [`Customers[${index}].BookingFieldValues[1].FieldTypeId`]: 1,
-      [`Customers[${index}].BookingFieldValues[2].Value`]: lastname[index],
+      [`Customers[${index}].BookingFieldValues[2].Value`]: person.lastname,
       [`Customers[${index}].BookingFieldValues[2].BookingFieldId`]: 6,
       [`Customers[${index}].BookingFieldValues[2].BookingFieldTextName`]:
         "BF_2_EFTERNAMN",
@@ -363,11 +400,7 @@ export class BookingService {
       [`Customers[${index}].Services[1].ServiceTextName`]: `SERVICE_2_ID-KORT${this.region.toUpperCase()}`,
     }));
     const res = await this.postRequest(
-      Object.assign(
-        {},
-        { Next: "Nästa", "mtcaptcha-verifiedtoken": verifiedToken },
-        ...customerData
-      )
+      Object.assign({}, { Next: "Nästa" }, ...customerData)
     );
     const $ = cheerio.load(await res.text());
     const title = $(TITLE_SELECTOR).text();

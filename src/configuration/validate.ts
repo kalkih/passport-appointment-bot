@@ -8,9 +8,6 @@ const REQUIRED_PROPERTIES: (keyof RequiredConfig)[] = [
   "max_date",
   "email",
   "phone",
-  "personnummer",
-  "firstname",
-  "lastname",
   "passport",
   "id",
   "confirmation",
@@ -29,12 +26,12 @@ export default (config: Config) => {
   });
 
   if (
-    ![config.firstname, config.lastname].every(
-      (arr) => arr.length === config.personnummer.length
+    ![config.extra_firstnames, config.extra_lastnames].every(
+      (arr) => arr && arr.length === config.extra_personnummer?.length
     )
   ) {
     logger.error(
-      "Same number of 'personnummer', 'firstnames' & 'lastnames' has to be provided"
+      "Same number of extra 'personnummer', 'firstnames' & 'lastnames' has to be provided"
     );
     process.exit();
   }
