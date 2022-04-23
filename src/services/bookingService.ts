@@ -347,9 +347,13 @@ export class BookingService {
       throw new BookingPageError({ page: $ });
     }
 
-    const tin = $("#Customers_0__BookingFieldValues_0__Value").text();
-    const firstname = $("#Customers_0__BookingFieldValues_1__Value").text();
-    const lastname = $("#Customers_0__BookingFieldValues_2__Value").text();
+    const tin = $("#Customers_0__BookingFieldValues_0__Value").val() as string;
+    const firstname = $(
+      "#Customers_0__BookingFieldValues_1__Value"
+    ).val() as string;
+    const lastname = $(
+      "#Customers_0__BookingFieldValues_2__Value"
+    ).val() as string;
 
     return { tin, firstname, lastname };
   }
@@ -366,12 +370,15 @@ export class BookingService {
   ) {
     const people = [
       personalDetails,
-      ...[extra_personnummer].map((_, i) => ({
-        firstname: [extra_firstnames][i],
-        lastname: [extra_lastnames][i],
-        tin: [extra_personnummer][i],
-      })),
+      ...(extra_personnummer.length > 0
+        ? [extra_personnummer].map((_, i) => ({
+            firstname: extra_firstnames[i],
+            lastname: extra_lastnames[i],
+            tin: extra_personnummer[i],
+          }))
+        : []),
     ];
+
     logger.verbose(`Providing personal details`);
     const customerData = people.map((person, index) => ({
       [`Customers[${index}].BookingCustomerId`]: 0,
