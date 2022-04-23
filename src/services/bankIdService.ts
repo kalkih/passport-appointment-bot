@@ -38,8 +38,8 @@ class BankIdService {
     this.sessionId = sessionId;
   }
 
-  private get identifyUrl(): string {
-    return `${BASE_URL}/authenticate?sessionId=${this.sessionId}`;
+  private get loginUrl(): string {
+    return `${BASE_URL}/api/login?sessionid=${this.sessionId}`;
   }
 
   private get pollStatusUrl(): string {
@@ -55,24 +55,11 @@ class BankIdService {
   }
 
   public async identify(): Promise<string> {
-    const res = await this.fetch(
-      `https://legitimera.polisen.se/api/login?sessionid=${this.sessionId}`
-    );
+    const res = await this.fetch(this.loginUrl);
     const $ = cheerio.load(await res.text());
     const url = $("#a_wpki2").attr("href");
 
     await this.fetch(BASE_URL + url);
-
-    await this.fetch(this.identifyUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        device: "other",
-        use_qr: "true",
-      }),
-    });
 
     await this.newAttempt();
     return await this.pollStatus();
