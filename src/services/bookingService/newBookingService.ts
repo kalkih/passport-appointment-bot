@@ -250,6 +250,14 @@ export class NewBookingService extends BookingService {
     const title = $(TITLE_SELECTOR).text();
 
     if (title !== "Viktig information") {
+      const validationErrorText = $(VALIDATION_ERROR_SELECTOR).text();
+      if (validationErrorText.includes(EXISTING_BOOKING_ERROR_TEXT)) {
+        logger.error(
+          "An appointment with the same email and/or phone number already exists"
+        );
+        process.exit();
+      }
+
       throw new BookingPageError({ page: $ });
     }
   }
@@ -326,16 +334,6 @@ export class NewBookingService extends BookingService {
     });
     const $ = cheerio.load(await res.text());
     const title = $(TITLE_SELECTOR).text();
-
-    if (title === "Bekräfta bokning") {
-      const validationErrorText = $(VALIDATION_ERROR_SELECTOR).text();
-      if (validationErrorText.includes(EXISTING_BOOKING_ERROR_TEXT)) {
-        logger.error(
-          "An appointment with the same email and/or phone number already exists"
-        );
-        process.exit();
-      }
-    }
 
     if (title !== "Din bokning är nu klar") {
       throw new BookingPageError({ page: $ });
