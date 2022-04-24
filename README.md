@@ -57,11 +57,11 @@ Requires **Nodejs** _(Tested on v17.7.1)_
 
 When booking for more than the person identifying with BankID, use these options to provide personal details for the other people (Do not include personal details for the person idetifying with BankID).
 
-| Option             | Required | Description                                                                                                                          |
-| ------------------ | :------: | ------------------------------------------------------------------------------------------------------------------------------------ |
-| extra_personnummer | &#10060; | Additional Personnummer / Social security number(s), when booking for more than one person e.g. `["19940101-8453", "19960101-6406"]` |
-| extra_firstnames   | &#10060; | Additional firstname(s), when booking for more than one person e.g. `["John", "Jane"]`                                               |
-| extra_lastnames    | &#10060; | Additional lastname(s), when booking for more than one person e.g. `["Doe", "Doe"]`                                                  |
+| Option             | Required | Description                                                                                                                        |
+| ------------------ | :------: | ---------------------------------------------------------------------------------------------------------------------------------- |
+| extra_personnummer | &#10060; | Additional Personnummer / Social security number(s), when booking for more than one person e.g. `["199401018453", "199601016406"]` |
+| extra_firstnames   | &#10060; | Additional firstname(s), when booking for more than one person e.g. `["John", "Jane"]`                                             |
+| extra_lastnames    | &#10060; | Additional lastname(s), when booking for more than one person e.g. `["Doe", "Doe"]`                                                |
 
 #### Advanced configuration options
 
