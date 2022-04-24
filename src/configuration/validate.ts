@@ -75,7 +75,8 @@ function validateLocations(validLocations: Locations, locations: string[]) {
   const confirmedLocations: Location[] = [];
   for (const location of locations) {
     if (location in validLocations) {
-      confirmedLocations.push({ name: location, id: validLocations[location] });
+      const { id, serviceId } = validLocations[location];
+      confirmedLocations.push({ name: location, id, serviceId });
     } else {
       logger.warn(`Location not found: ${location}, skipping...`);
     }

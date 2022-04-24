@@ -12,6 +12,7 @@ export interface RequiredConfig {
 }
 
 export interface OptionalConfig {
+  booking_number?: string;
   extra_personnummer?: string[];
   extra_firstnames?: string[];
   extra_lastnames?: string[];
@@ -42,4 +43,5 @@ export enum ConfirmationType {
 export interface Location {
   name: string;
   id: number;
+  serviceId: number;
 }

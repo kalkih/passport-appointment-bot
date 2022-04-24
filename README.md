@@ -20,7 +20,7 @@ Download `config.json` & `passport-appointment-bot` for your OS from the [latest
 
 1. Edit the configuration file downloaded (`config.json`) with any text editor, see [Configuration](#configuration) for information on the options
 2. Run the executable downloaded earlier `passport-appointment-bot`
-3. The bot will prompt for BankID identification (BankID is now required in order to book an appointment)
+3. The bot will prompt for BankID identification (BankID is now required in order to book an appointment, unless an existing booking number is provided in the config)
 4. The bot will search until an appointment is found
 5. A booking confirmation will be sent to the configured email and/or phonenumber specified in the config, it will also be displayed in the application
 
@@ -32,7 +32,7 @@ Requires **Nodejs** _(Tested on v17.7.1)_
 1. Clone the project, install dependencies with `npm install`
 2. Edit configuration values in `config.json`, see [Configuration](#configuration) for information on the options
 3. Run the bot with `npm start`
-4. The bot will prompt for BankID identification (BankID is now required in order to book an appointment)
+4. The bot will prompt for BankID identification (BankID is now required in order to book an appointment, unless an existing booking number is provided in the config)
 5. The bot will search until an appointment is found
 6. A booking confirmation will be sent to the configured email and/or phonenumber specified in the config, it will also be displayed in the console
 
@@ -40,17 +40,18 @@ Requires **Nodejs** _(Tested on v17.7.1)_
 
 #### Basic configuration options
 
-| Option       | Required | Description                                                                                      |
-| ------------ | :------: | ------------------------------------------------------------------------------------------------ |
-| region       | &#x2705; | Desired region, see [Supported Regions & Locations](#supported-regions--locations)               |
-| locations    | &#x2705; | One or more cities/locations, see [Supported Regions & Locations](#supported-regions--locations) |
-| max_date     | &#x2705; | Latest date to search for appointment (will search all days in the week of the specified date)   |
-| min_date     | &#10060; | Earliest date to search for appointment (will search all days in the week of the specified date) |
-| email        | &#x2705; | Email (confirmation will be sent to this address)                                                |
-| phone        | &#x2705; | Phone number (confirmation will be sent to this number)                                          |
-| passport     | &#x2705; | Set to `true` if the booking appointment is for passport, else `false`                           |
-| id           | &#x2705; | Set to `true` if the booking appointment is for national identity card, else `false`             |
-| confirmation | &#x2705; | Method for receiving booking confirmation `email` and/or `sms`                                   |
+| Option         | Required | Description                                                                                                                                      |
+| -------------- | :------: | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| region         | &#x2705; | Desired region, see [Supported Regions & Locations](#supported-regions--locations)                                                               |
+| locations      | &#x2705; | One or more cities/locations, see [Supported Regions & Locations](#supported-regions--locations)                                                 |
+| max_date       | &#x2705; | Latest date to search for appointment (will search all days in the week of the specified date)                                                   |
+| min_date       | &#10060; | Earliest date to search for appointment (will search all days in the week of the specified date)                                                 |
+| booking_number | &#10060; | An existing booking number to use when searching for available times. When providing an existing booking number BankID identification is skipped |
+| email          | &#x2705; | Email (confirmation will be sent to this address)                                                                                                |
+| phone          | &#x2705; | Phone number (confirmation will be sent to this number)                                                                                          |
+| passport       | &#x2705; | Set to `true` if the booking appointment is for passport, else `false`                                                                           |
+| id             | &#x2705; | Set to `true` if the booking appointment is for national identity card, else `false`                                                             |
+| confirmation   | &#x2705; | Method for receiving booking confirmation `email` and/or `sms`                                                                                   |
 
 #### Multiple people booking options
 

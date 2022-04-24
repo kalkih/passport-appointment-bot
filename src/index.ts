@@ -3,7 +3,7 @@ import { Cheerio, Element } from "cheerio";
 import { logger } from "./logger";
 import { tracker } from "./tracker";
 import { Location, readConfig, validateConfig } from "./configuration";
-import { BookingService } from "./services/bookingService";
+import { BookingService } from "./services/bookingService/bookingService";
 import {
   addDays,
   getMaxDate,
@@ -13,6 +13,8 @@ import {
   randomDate,
   shuffleArray,
 } from "./utils";
+import { NewBookingService } from "./services/bookingService/newBookingService";
+import { ExistingBookingService } from "./services/bookingService/existingBookingService";
 
 const args = yargs.option("mock", {
   alias: "m",
@@ -46,14 +48,23 @@ let pendingBookingPromise: undefined | Promise<void> = undefined;
 
 async function init(locations: Location[], date: Date) {
   const { mock } = await args;
-  const bookingService = new BookingService({
+  const bookingConfig = {
     region: config.region,
     numberOfPeople: 1 + config.extra_firstnames.length,
     mockBooking: mock,
     useProxy: config.useProxies,
     proxyTimeout: config.proxyTimeout,
     proxyRetries: config.proxyRetries,
-  });
+  };
+
+  const bookingService = config.booking_number
+    ? new ExistingBookingService({
+        ...bookingConfig,
+        email: config.email,
+        bookingNumber: config.booking_number,
+      })
+    : new NewBookingService(bookingConfig);
+
   await bookingService.init();
 
   checkAvailableSlotsForLocation(bookingService, [...locations], date);
@@ -73,7 +84,7 @@ async function checkAvailableSlotsForLocation(
     await pendingBookingPromise;
     logger.debug(`Loading ${name} week of ${getShortDate(dateToCheck)}`);
     const [freeSlots, bookedSlots] = await bookingService.getFreeSlotsForWeek(
-      id,
+      locationQueue[0],
       dateToCheck
     );
 
