@@ -22,7 +22,6 @@ interface ExistingBookingServiceConfig extends BookingServiceConfig {
 export class ExistingBookingService extends BookingService {
   private email: string;
   private bookingNumber: string;
-  private serviceTypeId?: string;
 
   constructor({ email, bookingNumber, ...args }: ExistingBookingServiceConfig) {
     super(args);
@@ -44,6 +43,10 @@ export class ExistingBookingService extends BookingService {
     const $ = cheerio.load(await response.text());
     const errors = $(VALIDATION_ERROR_SELECTOR).text();
     const nextButtonId = $("input[title='Ändra tid']").attr("name") || "";
+    const numberOfPeople = Number(
+      $("label[for='NumberOfPeople']").next().text()
+    );
+    this.numberOfPeople = numberOfPeople;
 
     if (errors.includes(NOT_FOUND_BOOKING_ERROR_TEXT)) {
       logger.error(
