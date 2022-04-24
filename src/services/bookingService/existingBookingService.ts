@@ -12,6 +12,7 @@ import {
 
 const TITLE_SELECTOR = ".header h1";
 const VALIDATION_ERROR_SELECTOR = ".validation-summary-errors";
+const NOT_FOUND_BOOKING_ERROR_TEXT = "Bokningen kunde inte hittas";
 
 interface ExistingBookingServiceConfig extends BookingServiceConfig {
   email: string;
@@ -41,7 +42,15 @@ export class ExistingBookingService extends BookingService {
     });
 
     const $ = cheerio.load(await response.text());
+    const errors = $(VALIDATION_ERROR_SELECTOR).text();
     const nextButtonId = $("input[title='Ändra tid']").attr("name") || "";
+
+    if (errors.includes(NOT_FOUND_BOOKING_ERROR_TEXT)) {
+      logger.error(
+        `The booking ${this.bookingNumber} could not be found, ensure you've provided the correct booking number and/or email`
+      );
+      process.exit();
+    }
 
     await this.postRequest({
       [nextButtonId]: "Ändra",
