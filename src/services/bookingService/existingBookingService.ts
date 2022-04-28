@@ -124,7 +124,7 @@ export class ExistingBookingService extends BookingService {
 
       const title = $(TITLE_SELECTOR).text();
 
-      if (title === "Omboka/Avboka") {
+      if (title === "Boka om eller avboka din tid") {
         recovered = true;
         break;
       }
