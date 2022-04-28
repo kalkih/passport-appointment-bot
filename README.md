@@ -14,8 +14,6 @@ It can also be configured to run several concurrent booking sessions in order to
 
 ### How to run
 
-Requires **Google Chrome**
-
 Download `config.json` & `passport-appointment-bot` for your OS from the [latest release](https://github.com/kalkih/passport-appointment-bot/releases/latest), place them in the same folder.
 
 1. Edit the configuration file downloaded (`config.json`) with any text editor, see [Configuration](#configuration) for information on the options
@@ -26,7 +24,6 @@ Download `config.json` & `passport-appointment-bot` for your OS from the [latest
 
 ### Run from source
 
-Requires **Google Chrome**  
 Requires **Nodejs** _(Tested on v17.7.1)_
 
 1. Clone the project, install dependencies with `npm install`
