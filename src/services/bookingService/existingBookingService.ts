@@ -2,6 +2,7 @@ import cheerio, { Cheerio, CheerioAPI, Element } from "cheerio";
 import { Location } from "../../configuration";
 import { logger } from "../../logger";
 import { getShortDate } from "../../utils";
+import { BankIdService } from "../bankIdService";
 import {
   BookingPageError,
   BookingService,
@@ -33,12 +34,18 @@ export class ExistingBookingService extends BookingService {
     logger.info("Launching session for existing booking...");
     await this.getRequest();
 
-    const response = await this.postRequest({
+    const initBookingResponse = await this.postRequest({
       FormId: 2,
       BookingNumber: this.bookingNumber,
       ContactInfo: this.email,
       NextButtonID6: "Omboka/Avboka",
     });
+
+    const sessionId = initBookingResponse.url.split("?sessionid=")[1];
+    const bankIdService = new BankIdService(sessionId);
+    const sessionUrl = await bankIdService.identify();
+
+    const response = await this.getRequest(sessionUrl);
 
     const $ = cheerio.load(await response.text());
     const errors = $(VALIDATION_ERROR_SELECTOR).text();
