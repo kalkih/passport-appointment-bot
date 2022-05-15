@@ -22,6 +22,7 @@ export interface OptionalConfig {
   useProxies?: boolean;
   proxyTimeout?: number;
   proxyRetries?: number;
+  ip?: string;
 }
 
 export interface Config extends RequiredConfig, OptionalConfig {

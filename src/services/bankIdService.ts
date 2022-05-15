@@ -1,19 +1,13 @@
 import { logger } from "../logger";
 import nodeFetch from "node-fetch";
-import qrCode from "qrcode-terminal";
 
 import makeFetchCookie from "fetch-cookie";
 import cheerio from "cheerio";
-
-enum BankIdStatus {
-  COMPLETED = 1,
-  SIGNING = 2,
-  NOT_STARTED = 3,
-  FINISHED = 4,
-  EXPIRED = 5,
-  EXCEPTION = 16,
-  CANCELED = 17,
-}
+import {
+  BankIdStatus,
+  clearBankIdState,
+  setBankIdState,
+} from "../store/bankIdStore";
 
 interface BankIdState {
   code: BankIdStatus;
@@ -71,6 +65,7 @@ class BankIdService {
       const interval = setInterval(async () => {
         const res = await this.fetch(this.pollStatusUrl);
         const state: BankIdState = await res.json();
+        setBankIdState(state);
         logger.debug(state);
 
         if (state.code === BankIdStatus.SIGNING) {
@@ -105,6 +100,7 @@ class BankIdService {
         ) {
           logger.success("BankID identification completed");
           clearInterval(interval);
+          clearBankIdState();
           return resolve();
         }
       }, 1000);
@@ -119,13 +115,9 @@ class BankIdService {
   private async newAttempt(): Promise<void> {
     const res = await this.fetch(this.newAttemptUrl);
     const attempt: BankIdAttempt = await res.json();
-    const qr = attempt.qr_text;
     logger.info("Requires BankID identification to proceed");
-    logger.info(
-      "Use the link or scan the QR code in the BankID app (valid for 30 seconds)"
-    );
-    console.log(qr);
-    qrCode.generate(qr, { small: true });
+    logger.info("Visit the website to scan the QR code");
+    setBankIdState(attempt);
     logger.verbose("Waiting for BankID verification...");
   }
 }

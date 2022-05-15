@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>passport-appointment-bot</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
+      integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <style>
+      html,
+      body {
+        background: rgb(23, 29, 42);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+          "Segoe UI Symbol";
+        text-align: center;
+      }
+      a {
+        color: white;
+      }
+      #link {
+        color: rgb(23, 29, 42);
+        padding: 12px;
+        background: white;
+        border-radius: 8px;
+        margin: 12px 0;
+        display: block;
+        font-weight: 600;
+        text-decoration: none;
+      }
+      #qrcode {
+        padding: 24px;
+        background: #ffffff;
+        border-radius: 8px;
+      }
+      img {
+        display: inline !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>
+      <a
+        href="https://github.com/kalkih/passport-appointment-bot"
+        target="_blank"
+      >
+        passport-appointment-bot
+      </a>
+    </h1>
+    <div id="bankid-section" style="display: none">
+      <h2>Waiting for BankID</h2>
+      <div id="qrcode"></div>
+      <a id="link" href="">Open BankID on this device</a>
+    </div>
+    <h3 id="status"></h3>
+
+    <script>
+      var path = location.pathname.split("/");
+      var bankIdElement = document.querySelector("#bankid-section");
+      var qrElement = document.querySelector("#qrcode");
+      var linkElement = document.querySelector("#link");
+      var statusElement = document.querySelector("#status");
+      var bankIdLink = "";
+
+      function identify() {
+        fetch(`${location.origin}/identify`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }).then(async (res) => {
+          if (res.status === 200) {
+            var { code, description, result, qr_text } = await res.json();
+            if (typeof code !== "undefined") {
+              bankIdElement.style.display = "block";
+              linkElement.setAttribute("href", qr_text);
+              statusElement.innerHTML = description;
+
+              if (qr_text !== bankIdLink) {
+                bankIdLink = qr_text;
+                qrElement.innerHTML = "";
+                new QRCode(qrElement, {
+                  text: bankIdLink,
+                  colorDark: "#2a364f",
+                  colorLight: "#ffffff",
+                  correctLevel: QRCode.CorrectLevel.H,
+                });
+              }
+            } else {
+              bankIdElement.style.display = "none";
+              statusElement.innerHTML = "Thanks, you're identified!";
+            }
+          }
+        });
+      }
+      identify();
+      setInterval(identify, 2000);
+    </script>
+  </body>
+</html>

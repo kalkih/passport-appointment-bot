@@ -15,6 +15,7 @@ import {
 } from "./utils";
 import { NewBookingService } from "./services/bookingService/newBookingService";
 import { ExistingBookingService } from "./services/bookingService/existingBookingService";
+import "./server";
 
 const args = yargs.option("mock", {
   alias: "m",

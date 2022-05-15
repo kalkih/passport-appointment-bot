@@ -8,5 +8,6 @@
   "id": false,
   "confirmation": ["email", "sms"],
   "sessions": 1,
-  "throttle": 0
+  "throttle": 0,
+  "ip": "localhost"
 }
