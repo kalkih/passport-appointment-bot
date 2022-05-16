@@ -83,7 +83,10 @@
             var { code, description, result, qr_text } = await res.json();
             if (typeof code !== "undefined") {
               bankIdElement.style.display = "block";
-              linkElement.setAttribute("href", qr_text);
+              linkElement.setAttribute(
+                "href",
+                qr_text + "&redirect=" + location.origin
+              );
               statusElement.innerHTML = description;
 
               if (qr_text !== bankIdLink) {
