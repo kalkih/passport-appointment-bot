@@ -168,7 +168,7 @@ export abstract class BookingService {
     }
   }
 
-  public abstract init(): Promise<void>;
+  public abstract init(config: Config): Promise<void>;
 
   public abstract recover(): Promise<boolean>;
 

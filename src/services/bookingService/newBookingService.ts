@@ -23,7 +23,7 @@ interface PersonalDetails {
 }
 
 export class NewBookingService extends BookingService {
-  public async init() {
+  public async init(config: Config) {
     logger.info("Launching booking session...");
     await this.getRequest();
 
@@ -48,8 +48,21 @@ export class NewBookingService extends BookingService {
     });
     logger.log("info", "Accepted booking terms");
 
+    const personalDetails = await this.selectNumberOfPeople();
+
+    await this.providePersonalDetails(personalDetails, config);
+
+    this.sessionStatus = BookingSessionStatus.INITIATED;
+    logger.success(
+      `Started booking session for ${this.numberOfPeople} person(s) ${
+        this.proxy ? "using proxies" : ""
+      }`
+    );
+  }
+
+  private async selectNumberOfPeople(): Promise<PersonalDetails> {
     logger.debug("Setting residency...");
-    await this.postRequest(
+    const res = await this.postRequest(
       [...Array(this.numberOfPeople)]
         .map((_, index) => ({
           [`ServiceCategoryCustomers[${index}].CustomerIndex`]: index,
@@ -63,12 +76,22 @@ export class NewBookingService extends BookingService {
           { Next: "Nästa" }
         )
     );
-    this.sessionStatus = BookingSessionStatus.INITIATED;
-    logger.success(
-      `Started booking session for ${this.numberOfPeople} person(s) ${
-        this.proxy ? "using proxies" : ""
-      }`
-    );
+    const $ = cheerio.load(await res.text());
+    const title = $(TITLE_SELECTOR).text();
+
+    if (title !== "Uppgifter till bokningen") {
+      throw new BookingPageError({ page: $ });
+    }
+
+    const tin = $("#Customers_0__BookingFieldValues_0__Value").val() as string;
+    const firstname = $(
+      "#Customers_0__BookingFieldValues_1__Value"
+    ).val() as string;
+    const lastname = $(
+      "#Customers_0__BookingFieldValues_2__Value"
+    ).val() as string;
+
+    return { tin, firstname, lastname };
   }
 
   public async getFreeSlotsForWeek(
@@ -133,12 +156,7 @@ export class NewBookingService extends BookingService {
     config: Config
   ) {
     try {
-      const personalDetails = await this.selectSlot(
-        serviceTypeId,
-        timeslot,
-        location
-      );
-      await this.providePersonalDetails(personalDetails, config);
+      await this.selectSlot(serviceTypeId, timeslot, location);
       await this.confirmSlot();
       await this.provideContactDetails(config);
       return await this.finalizeBooking();
@@ -162,7 +180,7 @@ export class NewBookingService extends BookingService {
     serviceTypeId: string,
     timeslot: string,
     location: number
-  ): Promise<PersonalDetails> {
+  ): Promise<void> {
     logger.verbose(`Selecting timeslot (${timeslot})`);
     const res = await this.postRequest({
       FormId: 2,
@@ -180,19 +198,9 @@ export class NewBookingService extends BookingService {
     const $ = cheerio.load(await res.text());
     const title = $(TITLE_SELECTOR).text();
 
-    if (title !== "Uppgifter till bokningen") {
+    if (title !== "Viktig information") {
       throw new BookingPageError({ page: $ });
     }
-
-    const tin = $("#Customers_0__BookingFieldValues_0__Value").val() as string;
-    const firstname = $(
-      "#Customers_0__BookingFieldValues_1__Value"
-    ).val() as string;
-    const lastname = $(
-      "#Customers_0__BookingFieldValues_2__Value"
-    ).val() as string;
-
-    return { tin, firstname, lastname };
   }
 
   private async providePersonalDetails(
@@ -244,12 +252,12 @@ export class NewBookingService extends BookingService {
       [`Customers[${index}].Services[1].ServiceTextName`]: `SERVICE_2_ID-KORT${this.region.toUpperCase()}`,
     }));
     const res = await this.postRequest(
-      Object.assign({}, { Next: "Nästa" }, ...customerData)
+      Object.assign({}, { Next: "Spara" }, ...customerData)
     );
     const $ = cheerio.load(await res.text());
     const title = $(TITLE_SELECTOR).text();
 
-    if (title !== "Viktig information") {
+    if (title !== "Välj tid") {
       const validationErrorText = $(VALIDATION_ERROR_SELECTOR).text();
       if (validationErrorText.includes(EXISTING_BOOKING_ERROR_TEXT)) {
         logger.error(

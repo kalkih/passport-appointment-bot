@@ -65,7 +65,7 @@ async function init(locations: Location[], date: Date) {
       })
     : new NewBookingService(bookingConfig);
 
-  await bookingService.init();
+  await bookingService.init(config);
 
   checkAvailableSlotsForLocation(bookingService, [...locations], date);
 }
