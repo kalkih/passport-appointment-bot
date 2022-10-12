@@ -1,6 +1,8 @@
 <h1 align="center">🤖 🛂 passport-appointment-bot 🛂 🤖</h1>
 
+
 <h2 align="center">⚠️ <strong>For educational use only</strong> ⚠️</h2>
+
 
 > Bot to automatically find and book an appointment for renewal/creation of a Swedish passport or national identity card.
 
