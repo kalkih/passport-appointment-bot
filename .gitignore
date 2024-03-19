@@ -6,3 +6,4 @@ dist
 build
 .*.log
 proxies.txt
+.config.local.json

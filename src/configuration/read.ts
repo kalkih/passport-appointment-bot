@@ -16,11 +16,12 @@ const DEFAULT_OPTIONS = {
 
 const readConfig = (): Config => {
   try {
+    const localConfigPath = getPath("./config.local.json");
     const configPath = getPath("./config.json");
 
-    const config: RequiredConfig = JSON.parse(
-      fs.readFileSync(configPath).toString()
-    );
+    const path = fs.existsSync(localConfigPath) ? localConfigPath : configPath;
+
+    const config: RequiredConfig = JSON.parse(fs.readFileSync(path).toString());
 
     if (typeof config.confirmation === "string") {
       config.confirmation = [config.confirmation];
