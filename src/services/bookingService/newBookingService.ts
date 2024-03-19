@@ -136,7 +136,7 @@ export class NewBookingService extends BookingService {
       const $ = cheerio.load(await res.text());
 
       logger.debug(`Checking week of: ${getShortDate(date)}`);
-      const freeSlots = $(".timecell script");
+      const freeSlots = $(".timecell button");
       const bookedSlots = $(".timecell label");
 
       return [freeSlots, bookedSlots];
