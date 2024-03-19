@@ -41,7 +41,7 @@ export class ExistingBookingService extends BookingService {
       NextButtonID6: "Omboka/Avboka",
     });
 
-    const sessionId = initBookingResponse.url.split("?sessionid=")[1];
+    const sessionId = initBookingResponse.url.split("&lid=")[1];
     const bankIdService = new BankIdService(sessionId);
     const sessionUrl = await bankIdService.identify();
 

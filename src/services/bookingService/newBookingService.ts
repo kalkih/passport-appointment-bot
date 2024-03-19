@@ -33,7 +33,7 @@ export class NewBookingService extends BookingService {
       StartNextButton: "Boka ny tid",
     });
 
-    const sessionId = res.url.split("?sessionid=")[1];
+    const sessionId = res.url.split("&lid=")[1];
     const bankIdService = new BankIdService(sessionId);
     const sessionUrl = await bankIdService.identify();
 
