@@ -23,6 +23,7 @@ interface ExistingBookingServiceConfig extends BookingServiceConfig {
 export class ExistingBookingService extends BookingService {
   private email: string;
   private bookingNumber: string;
+  private numberOfPeople?: number;
 
   constructor({ email, bookingNumber, ...args }: ExistingBookingServiceConfig) {
     super(args);
@@ -32,8 +33,20 @@ export class ExistingBookingService extends BookingService {
 
   public async init() {
     logger.info("Launching session for existing booking...");
-    await this.getRequest();
 
+    const recoveredSession = await this.recoverFromSessionId();
+
+    if (recoveredSession) {
+      this.sessionStatus = BookingSessionStatus.INITIATED;
+      logger.success(
+        `Started booking session for ${this.numberOfPeople} person(s) ${
+          this.proxy ? "using proxies" : ""
+        }`
+      );
+      return;
+    }
+
+    await this.getRequest();
     const initBookingResponse = await this.postRequest({
       FormId: 2,
       BookingNumber: this.bookingNumber,
@@ -71,8 +84,9 @@ export class ExistingBookingService extends BookingService {
       "ContactViewModel.SelectedContacts[3].IsSelected": false,
     });
 
-    this.sessionStatus = BookingSessionStatus.INITIATED;
+    this.saveSessionIdFromCookieJar();
 
+    this.sessionStatus = BookingSessionStatus.INITIATED;
     logger.success(
       `Started booking session for ${this.numberOfPeople} person(s) ${
         this.proxy ? "using proxies" : ""

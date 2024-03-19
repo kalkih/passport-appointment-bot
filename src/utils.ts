@@ -53,3 +53,13 @@ export const addDays = (inDate: string | Date) => {
 export const getShortDate = (date: Date) => {
   return date.toISOString().split("T")[0];
 };
+
+export const generateHash = (text: string) => {
+  return text
+    .split("")
+    .reduce(function (a, b) {
+      a = (a << 5) - a + b.charCodeAt(0);
+      return a & a;
+    }, 0)
+    .toString();
+};

@@ -7,6 +7,7 @@ import { BankIdService } from "../bankIdService";
 import {
   BookingPageError,
   BookingService,
+  BookingServiceConfig,
   BookingSessionStatus,
   generatePreviousUrl,
 } from "./bookingService";
@@ -22,11 +23,33 @@ interface PersonalDetails {
   lastname: string;
 }
 
+interface NewBookingServiceConfig extends BookingServiceConfig {
+  numberOfPeople: number;
+}
+
 export class NewBookingService extends BookingService {
+  private numberOfPeople: number;
+
+  constructor({ numberOfPeople, ...args }: NewBookingServiceConfig) {
+    super(args);
+    this.numberOfPeople = numberOfPeople;
+  }
+
   public async init(config: Config) {
     logger.info("Launching booking session...");
-    await this.getRequest();
+    const recoveredSession = await this.recoverFromSessionId();
 
+    if (recoveredSession) {
+      this.sessionStatus = BookingSessionStatus.INITIATED;
+      logger.success(
+        `Started booking session for ${this.numberOfPeople} person(s) ${
+          this.proxy ? "using proxies" : ""
+        }`
+      );
+      return;
+    }
+
+    await this.getRequest();
     const res = await this.postRequest({
       FormId: 1,
       ServiceGroupId: LOCATIONS[this.region].id,
@@ -51,6 +74,8 @@ export class NewBookingService extends BookingService {
     const personalDetails = await this.selectNumberOfPeople();
 
     await this.providePersonalDetails(personalDetails, config);
+
+    this.saveSessionIdFromCookieJar();
 
     this.sessionStatus = BookingSessionStatus.INITIATED;
     logger.success(

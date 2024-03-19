@@ -6,6 +6,7 @@ import { Location, readConfig, validateConfig } from "./configuration";
 import { BookingService } from "./services/bookingService/bookingService";
 import {
   addDays,
+  generateHash,
   getMaxDate,
   getShortDate,
   getStartOfWeekDate,
@@ -55,6 +56,7 @@ async function init(locations: Location[], date: Date) {
     useProxy: config.useProxies,
     proxyTimeout: config.proxyTimeout,
     proxyRetries: config.proxyRetries,
+    hash: generateHash(JSON.stringify(config)),
   };
 
   const bookingService = config.booking_number

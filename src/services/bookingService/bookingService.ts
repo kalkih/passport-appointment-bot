@@ -1,20 +1,22 @@
 import nodeFetch, { FetchError, RequestInit, Response } from "node-fetch";
 import { AbortSignal } from "node-fetch/externals";
 import makeFetchCookie from "fetch-cookie";
-import { Cheerio, CheerioAPI, Element } from "cheerio";
+import { Cheerio, CheerioAPI, Element, load } from "cheerio";
+import { CookieJar } from "tough-cookie";
 import { logger } from "../../logger";
 import { Region } from "../../locations";
 import { Config, Location } from "../../configuration";
 import { ProxyService } from "../proxyService";
+import { getSession, saveSession } from "../../configuration/session";
 
 export interface BookingServiceConfig {
   region: Region;
-  numberOfPeople?: number;
   useProxy?: boolean;
   proxyTimeout?: number;
   mockBooking?: boolean;
   proxyRetries?: number;
   bookingNumber?: string;
+  hash: string;
 }
 
 export enum BookingSessionStatus {
@@ -24,6 +26,10 @@ export enum BookingSessionStatus {
 
 const DEFAULT_REQUEST_TIMEOUT = 30;
 const REQUEST_RETRY_COUNT = 3;
+
+const SESSION_COOKIE_NAME = "ASP.NET_VentusBooking_SessionId";
+const REGION_COOKIE_NAME = "ASP.NET_VentusBooking_SeqGUID";
+const TITLE_SELECTOR = ".header h1";
 
 export const generateBaseUrl = (region: Region) =>
   `https://bokapass.nemoq.se/Booking/Booking/Index/${replaceSpecialChars(
@@ -41,27 +47,100 @@ export const generatePreviousUrl = (region: Region) =>
 export abstract class BookingService {
   protected region: Region;
   protected mockBooking: boolean;
-  protected numberOfPeople: number;
-  protected fetchInstance = makeFetchCookie(nodeFetch);
+  protected cookieJar = new CookieJar();
+  protected fetchInstance = makeFetchCookie(nodeFetch, this.cookieJar);
   protected proxy?: ProxyService;
   protected requestTimeout: number;
   protected sessionStatus = BookingSessionStatus.INITIAL;
+  protected configHash: string;
+  protected recoverySessionId?: string;
 
   constructor({
     region,
-    numberOfPeople = 1,
     mockBooking = false,
+    hash,
     useProxy = false,
     proxyTimeout = DEFAULT_REQUEST_TIMEOUT,
     proxyRetries,
   }: BookingServiceConfig) {
+    this.configHash = hash;
     this.region = region;
     this.mockBooking = mockBooking;
-    this.numberOfPeople = numberOfPeople;
     this.requestTimeout = (proxyTimeout || DEFAULT_REQUEST_TIMEOUT) * 1000;
+
+    const recoverySessionId = getSession(hash);
+    if (recoverySessionId) {
+      this.recoverySessionId = recoverySessionId;
+      this.cookieJar.setCookie(
+        `${SESSION_COOKIE_NAME}=${recoverySessionId}; Path=/; HttpOnly; SameSite=Lax`,
+        `https://bokapass.nemoq.se/Booking/Booking/Index/${region}`
+      );
+      this.cookieJar.setCookie(
+        `${REGION_COOKIE_NAME}=${recoverySessionId}; Path=/; Secure; HttpOnly`,
+        `https://bokapass.nemoq.se/Booking/Booking/Index/${region}`
+      );
+    }
 
     if (useProxy) {
       this.proxy = new ProxyService(proxyRetries);
+    }
+  }
+
+  protected async saveSessionIdFromCookieJar(): Promise<void> {
+    const cookies = await this.cookieJar.getCookies(
+      "https://bokapass.nemoq.se"
+    );
+    const sessionCookie = cookies.find(
+      (cookie) => cookie.key === SESSION_COOKIE_NAME
+    );
+    if (sessionCookie) {
+      logger.debug("Caching session", sessionCookie);
+      saveSession(this.configHash, sessionCookie.value);
+    } else {
+      logger.debug("No session to cache found");
+    }
+  }
+
+  protected async recoverFromSessionId(): Promise<boolean> {
+    const recovered = await this.recoverFromProvidedSessionId();
+
+    if (recovered) {
+      logger.success("Recovered from cached session");
+    } else {
+      this.cookieJar.removeAllCookies();
+    }
+
+    return recovered;
+  }
+
+  private async recoverFromProvidedSessionId(): Promise<boolean> {
+    if (!this.recoverySessionId) {
+      return false;
+    }
+    try {
+      logger.debug("Checking if session is active");
+      const response = await this.fetch();
+
+      const $ = load(await response.text());
+      const title = $(TITLE_SELECTOR).text();
+
+      if (title.includes("Välkommen till tidsbokningen")) {
+        return false;
+      } else {
+        const recovered = await this.recover();
+        if (recovered) {
+          return true;
+        }
+        return false;
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error("Failed to check if session is active", error.message);
+        logger.error(error.stack);
+      } else {
+        logger.error("Failed to check if session is active", error);
+      }
+      return false;
     }
   }
 

@@ -7,3 +7,4 @@ build
 .*.log
 proxies.txt
 .config.local.json
+.session.json
